@@ -1,6 +1,7 @@
 package com.example.myapplication.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageButton
@@ -12,18 +13,18 @@ import com.example.myapplication.R
 import com.example.myapplication.touch.SwitchTouchListener
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class HomeFragment : Fragment(R.layout.fragment_home){
+class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener{
     private lateinit var switchContainer: FrameLayout
-    private lateinit var addSwitch: ImageButton
+    private lateinit var addBlock: ImageButton
     private lateinit var trashBin: ImageView
 
-    private val maxSwitches = 6
-    var switchCount = 0
+    private val maxBlocks = 8
+    var blockCount = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navigateToSettings(view)
-        addSwitches(view)
+        addBlock(view)
 
     }
 
@@ -35,24 +36,43 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         }
     }
 
-    private fun addSwitches(view: View){
+    private fun addBlock(view: View){
         switchContainer = view.findViewById(R.id.switchContainer)
-        addSwitch = view.findViewById(R.id.add_blocks)
+        addBlock = view.findViewById(R.id.add_blocks)
         trashBin = view.findViewById(R.id.trashBin)
 
-        val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
-
-        addSwitch.setOnClickListener {
-            if (switchCount<maxSwitches){
-                val newSwitch = Switch(requireContext())
-                newSwitch.text = "Switch ${switchCount+1}"
-                newSwitch.layoutParams = layoutParams
-                val switchTouchListener = SwitchTouchListener(newSwitch,trashBin,switchContainer)
-                newSwitch.setOnTouchListener(switchTouchListener)
-                switchContainer.addView(newSwitch)
-                switchCount++
-            }
+        addBlock.setOnClickListener {
+            val topicDialog = AddTopicDialogFragment()
+            topicDialog.show(childFragmentManager,"topicDialog")
         }
+    }
+
+    private fun addSwitch(topic: String, blockName: String){
+        val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
+        if (blockCount<maxBlocks){
+            val newSwitch = Switch(requireContext())
+            newSwitch.text = blockName
+            newSwitch.layoutParams = layoutParams
+            val switchTouchListener = SwitchTouchListener(newSwitch,trashBin,switchContainer)
+            newSwitch.setOnCheckedChangeListener{_, isChecked ->
+                if (isChecked){
+                    Log.i("switch",topic)
+                }else{
+
+                }
+
+
+            }
+
+            newSwitch.setOnTouchListener(switchTouchListener)
+            switchContainer.addView(newSwitch)
+            blockCount++
+        }
+    }
+
+
+    override fun onTopicAdded(topic: String, blockName: String) {
+        addSwitch(topic,blockName)
     }
 
 
