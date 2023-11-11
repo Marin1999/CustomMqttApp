@@ -17,5 +17,9 @@
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.example.myapplication.fragments.SettingsFragment"
-        android:label="SettingsFragment" />
+        android:label="SettingsFragment" >
+        <action
+            android:id="@+id/action_settingsFragment_to_home_Fragment"
+            app:destination="@id/home_Fragment" />
+    </fragment>
 </navigation>

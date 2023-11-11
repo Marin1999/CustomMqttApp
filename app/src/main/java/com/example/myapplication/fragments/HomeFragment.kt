@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.Switch
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import com.example.myapplication.R
 import com.example.myapplication.touch.SwitchTouchListener
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -56,7 +57,12 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener{
             val switchTouchListener = SwitchTouchListener(newSwitch,trashBin,switchContainer)
             newSwitch.setOnCheckedChangeListener{_, isChecked ->
                 if (isChecked){
-                    Log.i("switch",topic)
+                    val sp = context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
+                    val Host = sp?.getString("Host","")
+
+                    if (Host != null) {
+                        Log.i("switch",Host)
+                    }
                 }else{
 
                 }
