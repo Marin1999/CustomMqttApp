@@ -35,6 +35,14 @@
         android:layout_marginEnd="24dp"
 
         />
+    <ImageButton
+        android:id="@+id/editDashboard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_edit_24"
+        android:layout_below="@+id/trashBin"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="24dp"/>
 
 
     <FrameLayout
