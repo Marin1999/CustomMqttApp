@@ -23,6 +23,7 @@ import kotlin.collections.mutableMapOf
 import kotlin.collections.set
 
 class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
+    private lateinit var mqttHandler: MqttHandler
 
     private lateinit var switchContainer: FrameLayout
     private lateinit var addBlock: ImageButton
@@ -59,6 +60,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         }
 
         restoreSwitchesState()
+
+        mqttHandler = MqttHandler(requireContext())
     }
 
 

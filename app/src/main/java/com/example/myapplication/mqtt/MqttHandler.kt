@@ -3,7 +3,7 @@ package com.example.myapplication.mqtt
 import android.content.Context
 import android.util.Log
 import androidx.preference.PreferenceManager
-import org.eclipse.paho.android.service.MqttAndroidClient
+import info.mqtt.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttToken
 import org.eclipse.paho.client.mqttv3.MqttCallback
@@ -31,19 +31,20 @@ class MqttHandler(private val context: Context) {
             }
 
             override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
-                exception?.printStackTrace()
+                Log.e("MQTT","Exception during connection", exception)
+
             }
         })
     }
 
     private fun getUsername(): String{
         val sp = context.let { PreferenceManager.getDefaultSharedPreferences(it) }
-        return ""
+        return sp?.getString("Username","") ?: ""
     }
 
     private fun getKey(): String{
         val sp = context.let { PreferenceManager.getDefaultSharedPreferences(it) }
-        return ""
+        return sp?.getString("Key","") ?: ""
     }
 
     private fun getBrokerUri(): String {
