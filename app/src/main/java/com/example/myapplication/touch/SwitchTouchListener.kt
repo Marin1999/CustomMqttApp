@@ -7,7 +7,6 @@ import android.view.View.OnTouchListener
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Switch
-import com.example.myapplication.fragments.HomeFragment
 
 class SwitchTouchListener(
     private val switch: Switch,
@@ -15,7 +14,7 @@ class SwitchTouchListener(
     private val switchContainer: FrameLayout,
     private val onSwitchRemoved: (Switch) -> Unit
 
-    ) : OnTouchListener {
+) : OnTouchListener {
 
     private var lastX = 0f
     private var lastY = 0f
@@ -68,7 +67,7 @@ class SwitchTouchListener(
         return true
     }
 
-    private fun isViewOverlapping(view1: View, view2: View): Boolean{
+    private fun isViewOverlapping(view1: View, view2: View): Boolean {
         val rect1 = Rect()
         val rect2 = Rect()
         view1.getGlobalVisibleRect(rect1)
@@ -76,7 +75,7 @@ class SwitchTouchListener(
 
         val centerX1 = rect1.centerX()
         val centerY1 = rect1.centerY()
-        return rect2.contains(centerX1,centerY1)
+        return rect2.contains(centerX1, centerY1)
 
     }
 }

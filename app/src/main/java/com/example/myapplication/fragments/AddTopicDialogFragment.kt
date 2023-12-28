@@ -31,14 +31,14 @@ class AddTopicDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.topic_dialog,container,false)
+        val view = inflater.inflate(R.layout.topic_dialog, container, false)
 
         val confirmButton = view.findViewById<ImageButton>(R.id.confirm_button)
         confirmButton.setOnClickListener {
             val topic = view.findViewById<EditText>(R.id.editTopic).text.toString()
             val blockName = view.findViewById<EditText>(R.id.editBlockName).text.toString()
 
-            onTopicAddedListener?.onTopicAdded(topic,blockName)
+            onTopicAddedListener?.onTopicAdded(topic, blockName)
             dismiss()
         }
         return view

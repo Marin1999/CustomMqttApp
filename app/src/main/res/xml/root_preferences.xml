@@ -7,6 +7,16 @@
             app:title="Host"
             app:useSimpleSummaryProvider="true" />
 
+        <EditTextPreference
+            app:key="Username"
+            app:title="Username"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="Key"
+            app:title="Key"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
