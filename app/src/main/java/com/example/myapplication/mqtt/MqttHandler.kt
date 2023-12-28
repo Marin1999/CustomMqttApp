@@ -10,6 +10,7 @@ import org.eclipse.paho.client.mqttv3.MqttCallback
 import org.eclipse.paho.client.mqttv3.MqttClient
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttMessage
+import java.lang.Exception
 
 class MqttHandler(private val context: Context) {
 
@@ -54,9 +55,13 @@ class MqttHandler(private val context: Context) {
 
     fun publishMessage(message:String,topic:String){
         if (mqttClient.isConnected){
-            val mqttMessage = MqttMessage()
-            mqttMessage.payload = message.toByteArray()
-            mqttClient.publish(topic,mqttMessage)
+            try{
+                val mqttMessage = MqttMessage()
+                mqttMessage.payload = message.toByteArray()
+                mqttClient.publish(topic,mqttMessage)
+            }catch (e: Exception){
+                Log.e("MQTT","Exception during publish: ", e)
+            }
         }
     }
 

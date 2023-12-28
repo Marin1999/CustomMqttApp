@@ -111,12 +111,9 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
             newSwitch.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    val sp = context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
-                    val host = sp?.getString("Host", "")
-
-                    if (host != null) {
-                        Log.i("switch", host)
-                    }
+                    mqttHandler.publishMessage("ON",topic)
+                }else{
+                    mqttHandler.publishMessage("OFF",topic)
                 }
                 saveSwitchesState()
             }
@@ -174,6 +171,15 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             val y = sp?.getFloat("switch_$index-y", 0f) ?: 0f
 
             newSwitch.text = blockName
+
+            newSwitch.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    mqttHandler.publishMessage("ON",topic)
+                }else{
+                    mqttHandler.publishMessage("OFF",topic)
+                }
+                saveSwitchesState()
+            }
 
             switchContainer.addView(newSwitch)
 
