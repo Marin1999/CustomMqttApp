@@ -62,6 +62,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         restoreSwitchesState()
 
         mqttHandler = MqttHandler(requireContext())
+
+        trashBin.visibility = if(editorMode) View.VISIBLE else View.GONE
     }
 
 
@@ -86,7 +88,12 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                 }
             }
         }
-        if (!editorMode) saveSwitchesState()
+        if (editorMode){
+            trashBin.visibility = View.VISIBLE
+        }else{
+            trashBin.visibility = View.GONE
+            saveSwitchesState()
+        }
     }
 
 
