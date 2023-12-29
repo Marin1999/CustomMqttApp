@@ -59,6 +59,7 @@ class MqttHandler(private val context: Context) {
                 val mqttMessage = MqttMessage()
                 mqttMessage.payload = message.toByteArray()
                 mqttClient.publish(topic,mqttMessage)
+                Log.i("MQTT","publish sent successfully")
             }catch (e: Exception){
                 Log.e("MQTT","Exception during publish: ", e)
             }
