@@ -7,6 +7,7 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Switch
+import android.widget.Toast
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -129,6 +130,9 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             switchMap[newSwitch] = SwitchData(blockName, topic, 0f, 0f)
             newSwitch.setOnTouchListener(switchTouchListener)
             switchContainer.addView(newSwitch)
+        }else{
+            val popup = Toast.makeText(requireContext(),"Maximum switches reached",Toast.LENGTH_SHORT)
+            popup.show()
         }
     }
 
