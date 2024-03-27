@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import com.example.myapplication.R
+import com.example.myapplication.models.BlockTypes
 import com.example.myapplication.models.SwitchData
 import com.example.myapplication.mqtt.MqttHandler
 import com.example.myapplication.touch.SwitchTouchListener
@@ -98,17 +99,19 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
     }
 
 
-    private fun addSwitch(topic: String, blockName: String) {
+    private fun addSwitch(topic: String, blockName: String, blockType: BlockTypes) {
         val layoutParams = FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.WRAP_CONTENT,
             FrameLayout.LayoutParams.WRAP_CONTENT
         )
-        Log.i("Block count", blockCount.toString())
+        Log.i("Blocktype", blockType.toString())
 
 
 
         if (blockCount < maxBlocks) {
             val newSwitch = Switch(requireContext())
+            newSwitch.setTrackResource(R.drawable.bg_track)
+            newSwitch.setThumbResource(R.drawable.thumb)
             newSwitch.text = blockName
             newSwitch.layoutParams = layoutParams
             blockCount++
@@ -207,8 +210,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
     }
 
-    override fun onTopicAdded(topic: String, blockName: String) {
-        addSwitch(topic, blockName)
+    override fun onTopicAdded(topic: String, blockName: String, blockType: BlockTypes) {
+        addSwitch(topic, blockName, blockType)
     }
 
 }
