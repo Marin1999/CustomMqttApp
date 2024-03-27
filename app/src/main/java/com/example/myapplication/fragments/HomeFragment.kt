@@ -110,6 +110,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
         if (blockCount < maxBlocks) {
             val newSwitch = Switch(requireContext())
+            newSwitch.setTrackResource(R.drawable.bg_track)
+            newSwitch.setThumbResource(R.drawable.thumb)
             newSwitch.text = blockName
             newSwitch.layoutParams = layoutParams
             blockCount++
