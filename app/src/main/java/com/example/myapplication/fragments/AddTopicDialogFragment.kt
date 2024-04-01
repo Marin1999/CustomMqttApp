@@ -15,7 +15,7 @@ import com.example.myapplication.R
 import com.example.myapplication.models.BlockTypes
 
 interface OnTopicAddedListener {
-    fun onTopicAdded(topic: String, blockName: String, blockType: BlockTypes)
+    fun onTopicAdded(topic: String,  blockType: BlockTypes)
 }
 
 class AddTopicDialogFragment : DialogFragment() {
@@ -41,10 +41,9 @@ class AddTopicDialogFragment : DialogFragment() {
         val confirmButton = view.findViewById<ImageButton>(R.id.confirm_button)
         confirmButton.setOnClickListener {
             val topic = view.findViewById<EditText>(R.id.editTopic).text.toString()
-            val blockName = view.findViewById<EditText>(R.id.editBlockName).text.toString()
 
 
-            onTopicAddedListener?.onTopicAdded(topic, blockName, selectedBlockType)
+            onTopicAddedListener?.onTopicAdded(topic,  selectedBlockType)
             dismiss()
         }
         return view

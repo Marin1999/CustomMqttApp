@@ -17,6 +17,7 @@ import com.example.myapplication.models.BlockTypes
 import com.example.myapplication.models.SwitchData
 import com.example.myapplication.mqtt.MqttHandler
 import com.example.myapplication.touch.SwitchTouchListener
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -39,18 +40,11 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val settingsButton = view.findViewById<FloatingActionButton>(R.id.fab_settings)
-
         switchContainer = view.findViewById(R.id.switchContainer)
         addBlock = view.findViewById(R.id.add_blocks)
         trashBin = view.findViewById(R.id.trashBin)
 
         val toggleEditorModeButton = view.findViewById<ImageButton>(R.id.editDashboard)
-
-        settingsButton.setOnClickListener {
-            val action = HomeFragmentDirections.actionHomeFragmentToSettingsFragment()
-            findNavController().navigate(action)
-        }
 
         addBlock.setOnClickListener {
             val topicDialog = AddTopicDialogFragment()
@@ -81,12 +75,11 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                 } else {
                     child.setOnTouchListener(null)
 
-                    val blockName = switchMap[child]?.blockName ?: ""
                     val topic = switchMap[child]?.topic ?: ""
                     val x = child.x
                     val y = child.y
 
-                    switchMap[child] = SwitchData(blockName, topic, x, y)
+                    switchMap[child] = SwitchData(topic, x, y)
                 }
             }
         }
@@ -99,7 +92,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
     }
 
 
-    private fun addSwitch(topic: String, blockName: String, blockType: BlockTypes) {
+    private fun addSwitch(topic: String, blockType: BlockTypes) {
         val layoutParams = FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.WRAP_CONTENT,
             FrameLayout.LayoutParams.WRAP_CONTENT
@@ -112,7 +105,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             val newSwitch = Switch(requireContext())
             newSwitch.setTrackResource(R.drawable.bg_track)
             newSwitch.setThumbResource(R.drawable.thumb)
-            newSwitch.text = blockName
             newSwitch.layoutParams = layoutParams
             blockCount++
 
@@ -130,7 +122,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             }
 
             if (!editorMode) toggleEditorMode()
-            switchMap[newSwitch] = SwitchData(blockName, topic, 0f, 0f)
+            switchMap[newSwitch] = SwitchData( topic, 0f, 0f)
             newSwitch.setOnTouchListener(switchTouchListener)
             switchContainer.addView(newSwitch)
         }else{
@@ -158,7 +150,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
         switchMap.entries.forEachIndexed { index, (switch, switchData) ->
             editor?.putBoolean("switch_$index", switch.isChecked)
-            editor?.putString("switch_$index-blockName", switchData.blockName)
             editor?.putString("switch_$index-topic", switchData.topic)
             editor?.putFloat("switch_$index-x", switchData.x)
             editor?.putFloat("switch_$index-y", switchData.y)
@@ -176,15 +167,15 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
         for (index in 0 until blockCount) {
             val newSwitch = Switch(requireContext())
+            newSwitch.setTrackResource(R.drawable.bg_track)
+            newSwitch.setThumbResource(R.drawable.thumb)
 
             newSwitch.isChecked = sp?.getBoolean("switch_$index", false) ?: false
 
-            val blockName = sp?.getString("switch_$index-blockName", "") ?: ""
             val topic = sp?.getString("switch_$index-topic", "") ?: ""
             val x = sp?.getFloat("switch_$index-x", 0f) ?: 0f
             val y = sp?.getFloat("switch_$index-y", 0f) ?: 0f
 
-            newSwitch.text = blockName
 
             newSwitch.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
@@ -197,7 +188,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
             switchContainer.addView(newSwitch)
 
-            switchMap[newSwitch] = SwitchData(blockName, topic, x, y)
+            switchMap[newSwitch] = SwitchData(topic, x, y)
 
             val layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -210,8 +201,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
     }
 
-    override fun onTopicAdded(topic: String, blockName: String, blockType: BlockTypes) {
-        addSwitch(topic, blockName, blockType)
+    override fun onTopicAdded(topic: String, blockType: BlockTypes) {
+        addSwitch(topic,  blockType)
     }
 
 }
