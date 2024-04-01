@@ -9,23 +9,17 @@
         android:layout_height="wrap_content"
         android:hint="Topic"/>
 
-    <EditText
-        android:id="@+id/editBlockName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Block name"
-        android:layout_below="@+id/editTopic"/>
     <Spinner
         android:id="@+id/selectBlock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/editBlockName"/>
+        android:layout_below="@+id/editTopic"/>
 
     <ImageButton
         android:id="@+id/confirm_button"
+        android:layout_below="@+id/editTopic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/editBlockName"
         android:layout_alignParentEnd="true"
         android:src="@drawable/baseline_check_box_24" />
 
