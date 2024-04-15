@@ -47,8 +47,9 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         val toggleEditorModeButton = view.findViewById<ImageButton>(R.id.editDashboard)
 
         addBlock.setOnClickListener {
-            val topicDialog = AddTopicDialogFragment()
-            topicDialog.show(childFragmentManager, "topicDialog")
+            val selectBlockTypeFragment = SelectBlockTypeFragment()
+            selectBlockTypeFragment.setHomeFragment(this)
+            selectBlockTypeFragment.show(parentFragmentManager,"select block type")
         }
 
         toggleEditorModeButton.setOnClickListener {

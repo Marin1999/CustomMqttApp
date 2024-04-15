@@ -9,11 +9,6 @@
         android:layout_height="wrap_content"
         android:hint="Topic"/>
 
-    <Spinner
-        android:id="@+id/selectBlock"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/editTopic"/>
 
     <ImageButton
         android:id="@+id/confirm_button"
