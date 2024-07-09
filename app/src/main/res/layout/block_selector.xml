@@ -6,7 +6,7 @@
              android:layout_height="wrap_content">
 
     <ImageButton
-        android:id="@+id/select_button"
+        android:id="@+id/select_switch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
@@ -30,8 +30,26 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Switch"
-        app:layout_constraintEnd_toEndOf="@+id/select_button"
-        app:layout_constraintStart_toStartOf="@+id/select_button"
+        app:layout_constraintEnd_toEndOf="@+id/select_switch"
+        app:layout_constraintStart_toStartOf="@+id/select_switch"
+        app:layout_constraintTop_toBottomOf="@+id/select_switch" />
+
+    <ImageButton
+        android:id="@+id/select_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:layout_constraintStart_toEndOf="@+id/select_switch"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:srcCompat="@drawable/button" />
+
+    <TextView
+        android:id="@+id/ButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="80dp"
+        android:text="Button"
+        app:layout_constraintStart_toEndOf="@+id/SwitchText"
         app:layout_constraintTop_toBottomOf="@+id/select_button" />
 
 

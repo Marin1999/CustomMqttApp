@@ -4,15 +4,16 @@ import android.graphics.Rect
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
+import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Switch
 
-class SwitchTouchListener(
-    private val switch: Switch,
+class BlockTouchListener(
+    private val block: View,
     private val trashBin: ImageView,
     private val switchContainer: FrameLayout,
-    private val onSwitchRemoved: (Switch) -> Unit
+    private val onSwitchRemoved: (View) -> Unit
 
 ) : OnTouchListener {
 
@@ -46,9 +47,9 @@ class SwitchTouchListener(
                     v.y = newY
                 }
 
-                if (isViewOverlapping(switch, trashBin)) {
-                    switchContainer.removeView(switch)
-                    onSwitchRemoved(switch)
+                if (isViewOverlapping(block, trashBin)) {
+                    switchContainer.removeView(block)
+                    onSwitchRemoved(block)
                 }
 
                 lastX = x
@@ -58,7 +59,11 @@ class SwitchTouchListener(
             MotionEvent.ACTION_UP -> {
                 // If the touch duration is short, it's considered a tap (toggle the switch)
                 if (System.currentTimeMillis() - touchDownTime <= longPressDuration) {
-                    switch.isChecked = !switch.isChecked
+                    if (block is Switch){
+                        block.isChecked = !block.isChecked
+                    }else if (block is Button){
+
+                    }
                 }
             }
         }

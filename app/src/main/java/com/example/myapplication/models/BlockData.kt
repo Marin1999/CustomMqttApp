@@ -1,6 +1,6 @@
 package com.example.myapplication.models
 
-data class SwitchData(
+data class BlockData(
     val topic: String,
     var x: Float,
     var y: Float
