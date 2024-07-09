@@ -21,9 +21,9 @@ interface OnTopicAddedListener {
     fun onTopicAdded(topic: String,  blockType: BlockTypes)
 }
 
-class AddTopicDialogFragment : DialogFragment() {
+class AddTopicDialogFragment(selectedBlockType: BlockTypes) : DialogFragment() {
     private var onTopicAddedListener: OnTopicAddedListener? = null
-    private var selectedBlockType: BlockTypes = BlockTypes.Switch
+    private var selectedBlockType: BlockTypes = selectedBlockType
 
     private var parentFragment: Fragment? = null
     private lateinit var homeFragment: HomeFragment
@@ -57,7 +57,7 @@ class AddTopicDialogFragment : DialogFragment() {
         confirmButton.setOnClickListener {
             val topic = view.findViewById<EditText>(R.id.editTopic).text.toString()
 
-            homeFragment?.onTopicAdded(topic,  selectedBlockType)
+            homeFragment.onTopicAdded(topic,  selectedBlockType)
             dismiss()
         }
         return view

@@ -3,6 +3,7 @@ package com.example.myapplication.fragments
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -10,15 +11,12 @@ import android.widget.Switch
 import android.widget.Toast
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import com.example.myapplication.R
 import com.example.myapplication.models.BlockTypes
-import com.example.myapplication.models.SwitchData
+import com.example.myapplication.models.BlockData
 import com.example.myapplication.mqtt.MqttHandler
-import com.example.myapplication.touch.SwitchTouchListener
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.example.myapplication.touch.BlockTouchListener
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.forEachIndexed
@@ -32,7 +30,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
     private lateinit var addBlock: ImageButton
     private lateinit var trashBin: ImageView
     private var editorMode = false
-    private val switchMap = mutableMapOf<Switch, SwitchData>()
+    private val blockMap = mutableMapOf<Any, BlockData>()
 
     private val maxBlocks = 8
     private var blockCount = 0
@@ -56,7 +54,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             toggleEditorMode()
         }
 
-        restoreSwitchesState()
+        restoreBlockState()
 
         mqttHandler = MqttHandler(requireContext())
 
@@ -68,19 +66,19 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         editorMode = !editorMode
 
         switchContainer.children.forEach { child ->
-            if (child is Switch) {
+            if (child is View) {
                 if (editorMode) {
-                    val switchTouchListener =
-                        SwitchTouchListener(child, trashBin, switchContainer) { removeSwitch(it) }
-                    child.setOnTouchListener(switchTouchListener)
+                    val blockTouchListener =
+                        BlockTouchListener(child, trashBin, switchContainer) { removeBlock(it) }
+                    child.setOnTouchListener(blockTouchListener)
                 } else {
                     child.setOnTouchListener(null)
 
-                    val topic = switchMap[child]?.topic ?: ""
+                    val topic = blockMap[child]?.topic ?: ""
                     val x = child.x
                     val y = child.y
 
-                    switchMap[child] = SwitchData(topic, x, y)
+                    blockMap[child] = BlockData(topic, x, y)
                 }
             }
         }
@@ -88,122 +86,148 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             trashBin.visibility = View.VISIBLE
         }else{
             trashBin.visibility = View.GONE
-            saveSwitchesState()
+            saveBlockState()
         }
     }
 
 
-    private fun addSwitch(topic: String, blockType: BlockTypes) {
-        val layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.WRAP_CONTENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
-        )
+    private fun addBlock(topic: String, blockType: BlockTypes) {
         Log.i("Blocktype", blockType.toString())
 
 
 
         if (blockCount < maxBlocks) {
-            val newSwitch = Switch(requireContext())
-            newSwitch.setTrackResource(R.drawable.bg_track)
-            newSwitch.setThumbResource(R.drawable.thumb)
-            newSwitch.layoutParams = layoutParams
-            blockCount++
-
-
-            val switchTouchListener =
-                SwitchTouchListener(newSwitch, trashBin, switchContainer) { removeSwitch(it) }
-
-            newSwitch.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    mqttHandler.publishMessage("ON",topic)
-                }else{
-                    mqttHandler.publishMessage("OFF",topic)
-                }
-                saveSwitchesState()
+            if (blockType == BlockTypes.Switch){
+                addSwitch(topic,0f,0f,true)
+            }else if (blockType == BlockTypes.Button){
+                addButton(topic, 0f, 0f, true)
             }
 
-            if (!editorMode) toggleEditorMode()
-            switchMap[newSwitch] = SwitchData( topic, 0f, 0f)
-            newSwitch.setOnTouchListener(switchTouchListener)
-            switchContainer.addView(newSwitch)
         }else{
             val popup = Toast.makeText(requireContext(),"Maximum switches reached",Toast.LENGTH_SHORT)
             popup.show()
         }
     }
 
-    private fun removeSwitch(switch: Switch) {
-        blockCount--
+    private fun addSwitch(topic: String, x: Float, y: Float, new: Boolean){
+        val layoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        )
 
-        switchMap.remove(switch)
+        val newSwitch = Switch(requireContext())
+        newSwitch.setTrackResource(R.drawable.bg_track)
+        newSwitch.setThumbResource(R.drawable.thumb)
+        newSwitch.x = x
+        newSwitch.y = y
+        newSwitch.layoutParams = layoutParams
+        if (new) blockCount++
 
-        switchContainer.removeView(switch)
 
-        saveSwitchesState()
+        val blockTouchListener = BlockTouchListener(newSwitch, trashBin, switchContainer) { removeBlock(it) }
+
+        newSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                mqttHandler.publishMessage("ON",topic)
+            }else{
+                mqttHandler.publishMessage("OFF",topic)
+            }
+            saveBlockState()
+        }
+
+        if (!editorMode && new) toggleEditorMode()
+        blockMap[newSwitch] = BlockData(topic, x, y)
+        newSwitch.setOnTouchListener(blockTouchListener)
+        switchContainer.addView(newSwitch)
+    }
+
+    private fun addButton(topic: String, x: Float, y: Float, new: Boolean){
+        val layoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        )
+
+        val newButton = Button(requireContext())
+        newButton.layoutParams = layoutParams
+        newButton.x = x
+        newButton.y = y
+        if (new) blockCount++
+
+        newButton.setOnClickListener {
+            mqttHandler.publishMessage("1",topic)
+        }
+
+        if (!editorMode && new) toggleEditorMode()
+
+        val blockTouchListener = BlockTouchListener(newButton, trashBin, switchContainer) { removeBlock(it) }
+
+        blockMap[newButton] = BlockData(topic,x,y)
+        newButton.setOnTouchListener(blockTouchListener)
+        newButton.text = topic.substringAfterLast("/")
+
+        switchContainer.addView(newButton)
 
 
     }
 
-    private fun saveSwitchesState() {
+    private fun removeBlock(block: Any) {
+        blockCount--
+
+        blockMap.remove(block)
+
+        if (block is View) {
+            switchContainer.removeView(block)
+        }
+        saveBlockState()
+
+
+    }
+
+    private fun saveBlockState() {
         val sp = context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
         val editor = sp?.edit()
         editor?.putInt("blockCount", blockCount)
 
-        switchMap.entries.forEachIndexed { index, (switch, switchData) ->
-            editor?.putBoolean("switch_$index", switch.isChecked)
-            editor?.putString("switch_$index-topic", switchData.topic)
-            editor?.putFloat("switch_$index-x", switchData.x)
-            editor?.putFloat("switch_$index-y", switchData.y)
+        blockMap.entries.forEachIndexed { index, (any, blockData) ->
+            if (any is Switch){
+                editor?.putString("block_$index-type","switch")
+                editor?.putBoolean("block_$index-checked", any.isChecked)
+            }else if(any is Button){
+                editor?.putString("block_$index-type","button")
+            }
+            editor?.putString("block_$index-topic", blockData.topic)
+            editor?.putFloat("block_$index-x", blockData.x)
+            editor?.putFloat("block_$index-y", blockData.y)
         }
 
         editor?.apply()
     }
 
-    private fun restoreSwitchesState() {
+    private fun restoreBlockState() {
         val sp = context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
         editorMode = false
         blockCount = sp?.getInt("blockCount", 0) ?: 0
 
-        switchMap.clear()
+        blockMap.clear()
 
         for (index in 0 until blockCount) {
-            val newSwitch = Switch(requireContext())
-            newSwitch.setTrackResource(R.drawable.bg_track)
-            newSwitch.setThumbResource(R.drawable.thumb)
+            val type = sp?.getString("block_$index-type","")?:""
+            val topic = sp?.getString("block_$index-topic", "") ?: ""
+            val x = sp?.getFloat("block_$index-x", 0f) ?: 0f
+            val y = sp?.getFloat("block_$index-y", 0f) ?: 0f
 
-            newSwitch.isChecked = sp?.getBoolean("switch_$index", false) ?: false
-
-            val topic = sp?.getString("switch_$index-topic", "") ?: ""
-            val x = sp?.getFloat("switch_$index-x", 0f) ?: 0f
-            val y = sp?.getFloat("switch_$index-y", 0f) ?: 0f
-
-
-            newSwitch.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    mqttHandler.publishMessage("ON",topic)
-                }else{
-                    mqttHandler.publishMessage("OFF",topic)
-                }
-                saveSwitchesState()
+            if (type == "switch"){
+                addSwitch(topic,x,y,false)
+            }else if (type == "button"){
+                addButton(topic,x,y, false)
             }
 
-            switchContainer.addView(newSwitch)
-
-            switchMap[newSwitch] = SwitchData(topic, x, y)
-
-            val layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            )
-            layoutParams.leftMargin = x.toInt()
-            layoutParams.topMargin = y.toInt()
-            newSwitch.layoutParams = layoutParams
         }
 
     }
 
     override fun onTopicAdded(topic: String, blockType: BlockTypes) {
-        addSwitch(topic,  blockType)
+        addBlock(topic,  blockType)
     }
 
 }
