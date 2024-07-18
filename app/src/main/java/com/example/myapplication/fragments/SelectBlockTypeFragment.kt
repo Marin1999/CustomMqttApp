@@ -2,6 +2,7 @@ package com.example.myapplication.fragments
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.provider.ContactsContract.CommonDataKinds.Im
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -28,6 +29,7 @@ class SelectBlockTypeFragment:DialogFragment(), OnTopicAddedListener, View.OnCli
         val view = inflater.inflate(R.layout.block_selector, container, false)
         view.findViewById<ImageButton>(R.id.select_switch).setOnClickListener(this)
         view.findViewById<ImageButton>(R.id.select_button).setOnClickListener(this)
+        view.findViewById<ImageButton>(R.id.select_alarm).setOnClickListener(this)
 
         return view
     }
@@ -35,6 +37,7 @@ class SelectBlockTypeFragment:DialogFragment(), OnTopicAddedListener, View.OnCli
         when (p0?.id){
             R.id.select_switch -> addBlock(BlockTypes.Switch)
             R.id.select_button -> addBlock(BlockTypes.Button)
+            R.id.select_alarm -> addBlock(BlockTypes.Alarm)
         }
     }
     private fun addBlock(blockType: BlockTypes){

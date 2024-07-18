@@ -17,6 +17,7 @@ import com.example.myapplication.models.BlockTypes
 import com.example.myapplication.models.BlockData
 import com.example.myapplication.mqtt.MqttHandler
 import com.example.myapplication.touch.BlockTouchListener
+import com.example.myapplication.views.AlarmView
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.forEachIndexed
@@ -101,6 +102,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                 addSwitch(topic,0f,0f,true)
             }else if (blockType == BlockTypes.Button){
                 addButton(topic, 0f, 0f, true)
+            }else if (blockType == BlockTypes.Alarm){
+                addAlarm(topic,0f,0f,true)
             }
 
         }else{
@@ -170,6 +173,29 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
     }
 
+    private fun addAlarm(topic: String,x: Float,y: Float,new: Boolean){
+        val layoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        )
+        val newAlarm = AlarmView(requireContext())
+        newAlarm.layoutParams = layoutParams
+        newAlarm.x = x
+        newAlarm.y = y
+
+        if (new) blockCount++
+        if (!editorMode && new) toggleEditorMode()
+
+        val blockTouchListener = BlockTouchListener(newAlarm, trashBin, switchContainer) { removeBlock(it) }
+
+        blockMap[newAlarm] = BlockData(topic, x, y)
+
+
+        newAlarm.setOnTouchListener(blockTouchListener)
+
+        switchContainer.addView(newAlarm)
+    }
+
     private fun removeBlock(block: Any) {
         blockCount--
 
@@ -194,6 +220,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                 editor?.putBoolean("block_$index-checked", any.isChecked)
             }else if(any is Button){
                 editor?.putString("block_$index-type","button")
+            }else if(any is AlarmView){
+                editor?.putString("block_$index-type","alarm")
             }
             editor?.putString("block_$index-topic", blockData.topic)
             editor?.putFloat("block_$index-x", blockData.x)
@@ -220,8 +248,9 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                 addSwitch(topic,x,y,false)
             }else if (type == "button"){
                 addButton(topic,x,y, false)
+            }else if (type == "alarm"){
+                addAlarm(topic,x,y,false)
             }
-
         }
 
     }
