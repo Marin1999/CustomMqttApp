@@ -52,5 +52,23 @@
         app:layout_constraintStart_toEndOf="@+id/SwitchText"
         app:layout_constraintTop_toBottomOf="@+id/select_button" />
 
+    <ImageView
+        android:id="@+id/select_alarm"
+        android:layout_width="116dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintStart_toEndOf="@+id/select_button"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:srcCompat="@drawable/alarm" />
+
+    <TextView
+        android:id="@+id/alarmText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="84dp"
+        android:text="Alarm"
+        app:layout_constraintStart_toEndOf="@+id/ButtonText"
+        app:layout_constraintTop_toBottomOf="@+id/select_alarm" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
