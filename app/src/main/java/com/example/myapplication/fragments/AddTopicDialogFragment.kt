@@ -6,19 +6,17 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.Spinner
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.NavHostFragment
 import com.example.myapplication.R
 import com.example.myapplication.models.BlockTypes
+import java.util.Calendar
 
 interface OnTopicAddedListener {
-    fun onTopicAdded(topic: String,  blockType: BlockTypes)
+    fun onTopicAdded(topic: String,  blockType: BlockTypes, time: Long)
 }
 
 class AddTopicDialogFragment(selectedBlockType: BlockTypes) : DialogFragment() {
@@ -53,12 +51,46 @@ class AddTopicDialogFragment(selectedBlockType: BlockTypes) : DialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.topic_dialog, container, false)
+
+        val editHour = view.findViewById<EditText>(R.id.editTimeHour)
+        val editMinute = view.findViewById<EditText>(R.id.editTimeMinute)
+
+        if (selectedBlockType == BlockTypes.Alarm)
+        {
+            editHour.visibility = View.VISIBLE
+            editMinute.visibility = View.VISIBLE
+        }
+
+
         val confirmButton = view.findViewById<ImageButton>(R.id.confirm_button)
         confirmButton.setOnClickListener {
             val topic = view.findViewById<EditText>(R.id.editTopic).text.toString()
 
-            homeFragment.onTopicAdded(topic,  selectedBlockType)
-            dismiss()
+            if (selectedBlockType == BlockTypes.Alarm) {
+                val hour = editHour.text.toString()
+                val minute = editMinute.text.toString()
+
+                if (hour.isNotEmpty() && minute.isNotEmpty()) {
+                    val calendar = Calendar.getInstance()
+
+                    calendar.set(Calendar.HOUR_OF_DAY, hour.toInt())
+                    calendar.set(Calendar.MINUTE, minute.toInt())
+                    calendar.set(Calendar.SECOND, 0)
+                    calendar.set(Calendar.MILLISECOND, 0)
+
+                    val selectedTimeInMillis = calendar.timeInMillis
+
+                    homeFragment.onTopicAdded(topic, selectedBlockType, selectedTimeInMillis)
+                    dismiss()
+                } else {
+                    Toast.makeText(requireContext(), "Please enter valid hour and minute", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                homeFragment.onTopicAdded(topic, selectedBlockType, 0L)
+                dismiss()
+            }
+
+
         }
         return view
     }

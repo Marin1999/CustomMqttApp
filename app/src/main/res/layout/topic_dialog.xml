@@ -9,13 +9,35 @@
         android:layout_height="wrap_content"
         android:hint="Topic"/>
 
+    <EditText
+        android:id="@+id/editTimeHour"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editTopic"
+        android:hint="HH"
+        android:visibility="gone"
+        android:inputType="time" />
+
+    <EditText
+        android:id="@+id/editTimeMinute"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editTopic"
+        android:layout_toEndOf="@+id/editTimeHour"
+        android:layout_marginStart="5dp"
+        android:hint="mm"
+        android:visibility="gone"
+        android:inputType="time" />
 
     <ImageButton
         android:id="@+id/confirm_button"
-        android:layout_below="@+id/editTopic"
+        android:layout_below="@+id/editTimeHour"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:src="@drawable/baseline_check_box_24" />
+
+
+
 
 </RelativeLayout>

@@ -1,13 +1,10 @@
 package com.example.myapplication.fragments
 
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.provider.ContactsContract.CommonDataKinds.Im
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import androidx.fragment.app.DialogFragment
 import com.example.myapplication.R
@@ -48,6 +45,6 @@ class SelectBlockTypeFragment:DialogFragment(), OnTopicAddedListener, View.OnCli
         topicDialog.show(parentFragmentManager,"topic")
         dismiss()
     }
-    override fun onTopicAdded(topic: String, blockType: BlockTypes) {}
+    override fun onTopicAdded(topic: String, blockType: BlockTypes, time: Long) {}
 
 }

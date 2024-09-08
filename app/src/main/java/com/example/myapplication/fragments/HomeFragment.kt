@@ -78,8 +78,9 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                     val topic = blockMap[child]?.topic ?: ""
                     val x = child.x
                     val y = child.y
+                    val time = blockMap[child]?.time
 
-                    blockMap[child] = BlockData(topic, x, y)
+                    blockMap[child] = BlockData(topic, x, y, time)
                 }
             }
         }
@@ -92,7 +93,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
     }
 
 
-    private fun addBlock(topic: String, blockType: BlockTypes) {
+    private fun addBlock(topic: String, blockType: BlockTypes, time: Long) {
         Log.i("Blocktype", blockType.toString())
 
 
@@ -103,7 +104,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             }else if (blockType == BlockTypes.Button){
                 addButton(topic, 0f, 0f, true)
             }else if (blockType == BlockTypes.Alarm){
-                addAlarm(topic,0f,0f,true)
+                addAlarm(topic,0f,0f,true, time)
             }
 
         }else{
@@ -173,7 +174,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
     }
 
-    private fun addAlarm(topic: String,x: Float,y: Float,new: Boolean){
+    private fun addAlarm(topic: String,x: Float,y: Float,new: Boolean,time: Long){
         val layoutParams = FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.WRAP_CONTENT,
             FrameLayout.LayoutParams.WRAP_CONTENT
@@ -188,7 +189,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
         val blockTouchListener = BlockTouchListener(newAlarm, trashBin, switchContainer) { removeBlock(it) }
 
-        blockMap[newAlarm] = BlockData(topic, x, y)
+        blockMap[newAlarm] = BlockData(topic, x, y, time)
+
 
 
         newAlarm.setOnTouchListener(blockTouchListener)
@@ -204,6 +206,11 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         if (block is View) {
             switchContainer.removeView(block)
         }
+
+        if (block is AlarmView) {
+            switchContainer.removeView(block)
+        }
+
         saveBlockState()
 
 
@@ -222,6 +229,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                 editor?.putString("block_$index-type","button")
             }else if(any is AlarmView){
                 editor?.putString("block_$index-type","alarm")
+                blockData.time?.let { editor?.putLong("block_$index-time", it) }
             }
             editor?.putString("block_$index-topic", blockData.topic)
             editor?.putFloat("block_$index-x", blockData.x)
@@ -249,14 +257,16 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             }else if (type == "button"){
                 addButton(topic,x,y, false)
             }else if (type == "alarm"){
-                addAlarm(topic,x,y,false)
+                val time = sp?.getLong("block_$index-time", 0) ?: 0
+                addAlarm(topic,x,y,false, time)
             }
         }
 
     }
 
-    override fun onTopicAdded(topic: String, blockType: BlockTypes) {
-        addBlock(topic,  blockType)
+
+    override fun onTopicAdded(topic: String, blockType: BlockTypes, time:Long) {
+        addBlock(topic,  blockType, time)
     }
 
 }

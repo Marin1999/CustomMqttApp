@@ -33,5 +33,5 @@ class MainActivity : AppCompatActivity(), OnTopicAddedListener {
 
     }
 
-    override fun onTopicAdded(topic: String, blockType: BlockTypes) {}
+    override fun onTopicAdded(topic: String, blockType: BlockTypes, time: Long) {}
 }
