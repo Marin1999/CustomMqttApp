@@ -9,8 +9,9 @@ import android.widget.ImageButton
 import androidx.fragment.app.DialogFragment
 import com.example.myapplication.R
 import com.example.myapplication.models.BlockTypes
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class SelectBlockTypeFragment:DialogFragment(), OnTopicAddedListener, View.OnClickListener {
+class SelectBlockTypeFragment:BottomSheetDialogFragment(), OnTopicAddedListener, View.OnClickListener {
     private lateinit var homeFragment: HomeFragment
 
     fun setHomeFragment(fragment: HomeFragment) {

@@ -13,13 +13,14 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import com.example.myapplication.R
 import com.example.myapplication.models.BlockTypes
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import java.util.Calendar
 
 interface OnTopicAddedListener {
     fun onTopicAdded(topic: String,  blockType: BlockTypes, time: Long)
 }
 
-class AddTopicDialogFragment(selectedBlockType: BlockTypes) : DialogFragment() {
+class AddTopicDialogFragment(selectedBlockType: BlockTypes) : BottomSheetDialogFragment() {
     private var onTopicAddedListener: OnTopicAddedListener? = null
     private var selectedBlockType: BlockTypes = selectedBlockType
 
