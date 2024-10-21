@@ -1,5 +1,6 @@
 package com.example.myapplication.fragments
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Switch
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
@@ -18,6 +20,9 @@ import com.example.myapplication.models.BlockData
 import com.example.myapplication.mqtt.MqttHandler
 import com.example.myapplication.touch.BlockTouchListener
 import com.example.myapplication.views.AlarmView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.forEachIndexed
@@ -141,7 +146,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
         if (!editorMode && new) toggleEditorMode()
         blockMap[newSwitch] = BlockData(topic, x, y)
-        newSwitch.setOnTouchListener(blockTouchListener)
+        if (editorMode) newSwitch.setOnTouchListener(blockTouchListener)
         switchContainer.addView(newSwitch)
     }
 
@@ -152,6 +157,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         )
 
         val newButton = Button(requireContext())
+        newButton.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.red))
+        newButton.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         newButton.layoutParams = layoutParams
         newButton.x = x
         newButton.y = y
@@ -166,7 +173,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         val blockTouchListener = BlockTouchListener(newButton, trashBin, switchContainer) { removeBlock(it) }
 
         blockMap[newButton] = BlockData(topic,x,y)
-        newButton.setOnTouchListener(blockTouchListener)
+        if (editorMode) newButton.setOnTouchListener(blockTouchListener)
         newButton.text = topic.substringAfterLast("/")
 
         switchContainer.addView(newButton)
@@ -179,7 +186,13 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             FrameLayout.LayoutParams.WRAP_CONTENT,
             FrameLayout.LayoutParams.WRAP_CONTENT
         )
+        val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+        val formattedTime = timeFormat.format(Date(time))
+
+
+
         val newAlarm = AlarmView(requireContext())
+        newAlarm.text = "Alarm set at $formattedTime"
         newAlarm.layoutParams = layoutParams
         newAlarm.x = x
         newAlarm.y = y
@@ -193,7 +206,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
 
 
-        newAlarm.setOnTouchListener(blockTouchListener)
+        if (editorMode) newAlarm.setOnTouchListener(blockTouchListener)
 
         switchContainer.addView(newAlarm)
     }

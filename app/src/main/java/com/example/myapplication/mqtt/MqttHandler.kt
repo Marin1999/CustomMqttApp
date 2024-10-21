@@ -37,20 +37,19 @@ class MqttHandler(private val context: Context) {
             }
         })
     }
-
-    private fun getUsername(): String{
-        val sp = context.let { PreferenceManager.getDefaultSharedPreferences(it) }
-        return sp?.getString("Username","") ?: ""
+    private fun getUsername(): String {
+        val sp = context?.getSharedPreferences("custom_prefs", 0)  // Use the same SharedPreferences file
+        return sp?.getString("username_key", "") ?: ""  // Fetch using the correct key (username_key)
     }
 
-    private fun getKey(): String{
-        val sp = context.let { PreferenceManager.getDefaultSharedPreferences(it) }
-        return sp?.getString("Key","") ?: ""
+    private fun getKey(): String {
+        val sp = context?.getSharedPreferences("custom_prefs", 0)
+        return sp?.getString("key_key", "") ?: ""  // Fetch using the correct key (key_key)
     }
 
     private fun getBrokerUri(): String {
-        val sp = context.let { PreferenceManager.getDefaultSharedPreferences(it) }
-        return sp?.getString("Host", "") ?: ""
+        val sp = context?.getSharedPreferences("custom_prefs", 0)
+        return sp?.getString("host_key", "") ?: ""  // Fetch using the correct key (host_key)
     }
 
     fun publishMessage(message:String,topic:String){
@@ -59,7 +58,7 @@ class MqttHandler(private val context: Context) {
                 val mqttMessage = MqttMessage()
                 mqttMessage.payload = message.toByteArray()
                 mqttClient.publish(topic,mqttMessage)
-                Log.i("MQTT","publish sent successfully")
+                Log.i("MQTT","publish sent successfully ")
             }catch (e: Exception){
                 Log.e("MQTT","Exception during publish: ", e)
             }

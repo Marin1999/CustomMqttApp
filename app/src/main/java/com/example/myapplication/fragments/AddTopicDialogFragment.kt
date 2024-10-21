@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.fragment.app.DialogFragment
+import androidx.appcompat.widget.AppCompatButton
 import androidx.fragment.app.Fragment
 import com.example.myapplication.R
 import com.example.myapplication.models.BlockTypes
@@ -51,21 +51,25 @@ class AddTopicDialogFragment(selectedBlockType: BlockTypes) : BottomSheetDialogF
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.topic_dialog, container, false)
+        val view: View
 
-        val editHour = view.findViewById<EditText>(R.id.editTimeHour)
-        val editMinute = view.findViewById<EditText>(R.id.editTimeMinute)
 
-        if (selectedBlockType == BlockTypes.Alarm)
-        {
-            editHour.visibility = View.VISIBLE
-            editMinute.visibility = View.VISIBLE
+        if (selectedBlockType == BlockTypes.Alarm) {
+            view = inflater.inflate(R.layout.topic_dialog_alarm, container, false) // Different layout for Alarm
+        } else {
+            view = inflater.inflate(R.layout.topic_dialog_default, container, false) // Default layout
         }
+        val editHour = view.findViewById<EditText>(R.id.editHours)
+        val editMinute = view.findViewById<EditText>(R.id.editMinutes)
 
 
-        val confirmButton = view.findViewById<ImageButton>(R.id.confirm_button)
+
+        val confirmButton = view.findViewById<AppCompatButton>(R.id.createButton)
         confirmButton.setOnClickListener {
             val topic = view.findViewById<EditText>(R.id.editTopic).text.toString()
+
+
+
 
             if (selectedBlockType == BlockTypes.Alarm) {
                 val hour = editHour.text.toString()

@@ -2,9 +2,9 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_checked="true"
         android:state_enabled="true"
-        android:drawable="@drawable/on_button"/>
+        android:drawable="@drawable/on_switch"/>
 
     <item android:state_checked="false"
         android:state_enabled="true"
-        android:drawable="@drawable/off_button"/>
+        android:drawable="@drawable/off_switch"/>
 </selector>

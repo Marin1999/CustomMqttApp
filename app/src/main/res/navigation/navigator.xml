@@ -11,15 +11,15 @@
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <action
-            android:id="@+id/action_home_Fragment_to_settingsFragment"
-            app:destination="@id/settingsFragment" />
+            android:id="@+id/action_home_Fragment_to_customPreferenceFragment"
+            app:destination="@id/customPreferenceFragment" />
     </fragment>
     <fragment
-        android:id="@+id/settingsFragment"
-        android:name="com.example.myapplication.fragments.SettingsFragment"
-        android:label="SettingsFragment" >
+        android:id="@+id/customPreferenceFragment"
+        android:name="com.example.myapplication.fragments.CustomPreferenceFragment"
+        android:label="CustomPreferenceFragment" >
         <action
-            android:id="@+id/action_settingsFragment_to_home_Fragment"
+            android:id="@+id/action_customPreferenceFragment_to_home_Fragment"
             app:destination="@id/home_Fragment" />
     </fragment>
 </navigation>
