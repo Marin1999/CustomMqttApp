@@ -18,11 +18,11 @@ class MainActivity : AppCompatActivity(), OnTopicAddedListener {
         bottomNavigation.setOnItemSelectedListener { menuItem ->
             when(menuItem.itemId){
                 R.id.navigation_settings->{
-                    findNavController(R.id.nav_host_fragment).navigate(R.id.action_home_Fragment_to_settingsFragment)
+                    findNavController(R.id.nav_host_fragment).navigate(R.id.action_home_Fragment_to_customPreferenceFragment)
                     true
                 }
                 R.id.navigation_home->{
-                    findNavController(R.id.nav_host_fragment).navigate(R.id.action_settingsFragment_to_home_Fragment)
+                    findNavController(R.id.nav_host_fragment).navigate(R.id.action_customPreferenceFragment_to_home_Fragment)
                     true
                 }
 
@@ -33,5 +33,5 @@ class MainActivity : AppCompatActivity(), OnTopicAddedListener {
 
     }
 
-    override fun onTopicAdded(topic: String, blockType: BlockTypes) {}
+    override fun onTopicAdded(topic: String, blockType: BlockTypes, time: Long) {}
 }

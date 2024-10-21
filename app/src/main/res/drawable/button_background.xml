@@ -1,0 +1,18 @@
+<!-- res/drawable/button_background.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background color (black) -->
+    <solid android:color="#000000" />
+
+    <!-- Optional: Rounded corners -->
+    <corners android:radius="12dp" /> <!-- You can adjust the corner radius if needed -->
+
+    <!-- Optional: Border (if there is a stroke around the button) -->
+    <!-- <stroke android:width="2dp" android:color="#FFFFFF" /> -->
+
+    <!-- Optional: Padding inside the button -->
+    <padding
+        android:left="16dp"
+        android:right="16dp"
+        android:top="10dp"
+        android:bottom="10dp" />
+</shape>

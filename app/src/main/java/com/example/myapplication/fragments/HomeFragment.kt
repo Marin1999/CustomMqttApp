@@ -1,5 +1,6 @@
 package com.example.myapplication.fragments
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Switch
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
@@ -18,6 +20,9 @@ import com.example.myapplication.models.BlockData
 import com.example.myapplication.mqtt.MqttHandler
 import com.example.myapplication.touch.BlockTouchListener
 import com.example.myapplication.views.AlarmView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.forEachIndexed
@@ -78,8 +83,9 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                     val topic = blockMap[child]?.topic ?: ""
                     val x = child.x
                     val y = child.y
+                    val time = blockMap[child]?.time
 
-                    blockMap[child] = BlockData(topic, x, y)
+                    blockMap[child] = BlockData(topic, x, y, time)
                 }
             }
         }
@@ -92,7 +98,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
     }
 
 
-    private fun addBlock(topic: String, blockType: BlockTypes) {
+    private fun addBlock(topic: String, blockType: BlockTypes, time: Long) {
         Log.i("Blocktype", blockType.toString())
 
 
@@ -103,7 +109,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             }else if (blockType == BlockTypes.Button){
                 addButton(topic, 0f, 0f, true)
             }else if (blockType == BlockTypes.Alarm){
-                addAlarm(topic,0f,0f,true)
+                addAlarm(topic,0f,0f,true, time)
             }
 
         }else{
@@ -140,7 +146,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
         if (!editorMode && new) toggleEditorMode()
         blockMap[newSwitch] = BlockData(topic, x, y)
-        newSwitch.setOnTouchListener(blockTouchListener)
+        if (editorMode) newSwitch.setOnTouchListener(blockTouchListener)
         switchContainer.addView(newSwitch)
     }
 
@@ -151,6 +157,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         )
 
         val newButton = Button(requireContext())
+        newButton.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.red))
+        newButton.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         newButton.layoutParams = layoutParams
         newButton.x = x
         newButton.y = y
@@ -165,7 +173,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         val blockTouchListener = BlockTouchListener(newButton, trashBin, switchContainer) { removeBlock(it) }
 
         blockMap[newButton] = BlockData(topic,x,y)
-        newButton.setOnTouchListener(blockTouchListener)
+        if (editorMode) newButton.setOnTouchListener(blockTouchListener)
         newButton.text = topic.substringAfterLast("/")
 
         switchContainer.addView(newButton)
@@ -173,12 +181,18 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
     }
 
-    private fun addAlarm(topic: String,x: Float,y: Float,new: Boolean){
+    private fun addAlarm(topic: String,x: Float,y: Float,new: Boolean,time: Long){
         val layoutParams = FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.WRAP_CONTENT,
             FrameLayout.LayoutParams.WRAP_CONTENT
         )
+        val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+        val formattedTime = timeFormat.format(Date(time))
+
+
+
         val newAlarm = AlarmView(requireContext())
+        newAlarm.text = "Alarm set at $formattedTime"
         newAlarm.layoutParams = layoutParams
         newAlarm.x = x
         newAlarm.y = y
@@ -188,10 +202,11 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
         val blockTouchListener = BlockTouchListener(newAlarm, trashBin, switchContainer) { removeBlock(it) }
 
-        blockMap[newAlarm] = BlockData(topic, x, y)
+        blockMap[newAlarm] = BlockData(topic, x, y, time)
 
 
-        newAlarm.setOnTouchListener(blockTouchListener)
+
+        if (editorMode) newAlarm.setOnTouchListener(blockTouchListener)
 
         switchContainer.addView(newAlarm)
     }
@@ -204,6 +219,11 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         if (block is View) {
             switchContainer.removeView(block)
         }
+
+        if (block is AlarmView) {
+            switchContainer.removeView(block)
+        }
+
         saveBlockState()
 
 
@@ -222,6 +242,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                 editor?.putString("block_$index-type","button")
             }else if(any is AlarmView){
                 editor?.putString("block_$index-type","alarm")
+                blockData.time?.let { editor?.putLong("block_$index-time", it) }
             }
             editor?.putString("block_$index-topic", blockData.topic)
             editor?.putFloat("block_$index-x", blockData.x)
@@ -249,14 +270,16 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             }else if (type == "button"){
                 addButton(topic,x,y, false)
             }else if (type == "alarm"){
-                addAlarm(topic,x,y,false)
+                val time = sp?.getLong("block_$index-time", 0) ?: 0
+                addAlarm(topic,x,y,false, time)
             }
         }
 
     }
 
-    override fun onTopicAdded(topic: String, blockType: BlockTypes) {
-        addBlock(topic,  blockType)
+
+    override fun onTopicAdded(topic: String, blockType: BlockTypes, time:Long) {
+        addBlock(topic,  blockType, time)
     }
 
 }
