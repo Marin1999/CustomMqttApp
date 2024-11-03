@@ -1,6 +1,10 @@
 package com.example.myapplication.fragments
 
 import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -18,11 +22,13 @@ import com.example.myapplication.R
 import com.example.myapplication.models.BlockTypes
 import com.example.myapplication.models.BlockData
 import com.example.myapplication.mqtt.MqttHandler
+import com.example.myapplication.receivers.AlarmReceiver
 import com.example.myapplication.touch.BlockTouchListener
 import com.example.myapplication.views.AlarmView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.forEachIndexed
@@ -30,7 +36,6 @@ import kotlin.collections.mutableMapOf
 import kotlin.collections.set
 
 class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
-    private lateinit var mqttHandler: MqttHandler
 
     private lateinit var switchContainer: FrameLayout
     private lateinit var addBlock: ImageButton
@@ -61,8 +66,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         }
 
         restoreBlockState()
-
-        mqttHandler = MqttHandler(requireContext())
 
         trashBin.visibility = if(editorMode) View.VISIBLE else View.GONE
     }
@@ -137,8 +140,10 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
         newSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
+                val mqttHandler = MqttHandler.getInstance(requireContext())
                 mqttHandler.publishMessage("ON",topic)
             }else{
+                val mqttHandler = MqttHandler.getInstance(requireContext())
                 mqttHandler.publishMessage("OFF",topic)
             }
             saveBlockState()
@@ -165,6 +170,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         if (new) blockCount++
 
         newButton.setOnClickListener {
+            val mqttHandler = MqttHandler.getInstance(requireContext())
             mqttHandler.publishMessage("1",topic)
         }
 
@@ -209,6 +215,21 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         if (editorMode) newAlarm.setOnTouchListener(blockTouchListener)
 
         switchContainer.addView(newAlarm)
+
+        val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(requireContext(), AlarmReceiver::class.java).apply {
+            putExtra("topic", topic)
+        }
+        val uniqueRequestCode = UUID.randomUUID().hashCode()
+        val pendingIntent = PendingIntent.getBroadcast(
+            requireContext(),
+            uniqueRequestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Set the alarm to trigger at the specified time
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pendingIntent)
     }
 
     private fun removeBlock(block: Any) {

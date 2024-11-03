@@ -12,56 +12,61 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import java.lang.Exception
 
-class MqttHandler(private val context: Context) {
+class MqttHandler private constructor(private val context: Context) {
 
     private val mqttClient: MqttAndroidClient by lazy {
-        MqttAndroidClient(context,getBrokerUri(),MqttClient.generateClientId())
+        MqttAndroidClient(context, getBrokerUri(), MqttClient.generateClientId())
     }
+
     init {
         connect()
     }
 
-    private fun connect(){
-        val options = MqttConnectOptions()
-        options.userName = getUsername()
-        options.password = getKey().toCharArray()
+    private fun connect() {
+        val options = MqttConnectOptions().apply {
+            userName = getUsername()
+            password = getKey().toCharArray()
+        }
 
-        mqttClient.connect(options,null,object : IMqttActionListener{
+        mqttClient.connect(options, null, object : IMqttActionListener {
             override fun onSuccess(asyncActionToken: IMqttToken?) {
-                Log.i("MQTT","Connection succesfull")
+                Log.i("MQTT", "Connection successful")
             }
 
             override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
-                Log.e("MQTT","Exception during connection", exception)
-
+                Log.e("MQTT", "Exception during connection", exception)
             }
         })
     }
+
     private fun getUsername(): String {
-        val sp = context?.getSharedPreferences("custom_prefs", 0)  // Use the same SharedPreferences file
-        return sp?.getString("username_key", "") ?: ""  // Fetch using the correct key (username_key)
+        val sp = context.getSharedPreferences("custom_prefs", 0)
+        return sp.getString("username_key", "") ?: ""
     }
 
     private fun getKey(): String {
-        val sp = context?.getSharedPreferences("custom_prefs", 0)
-        return sp?.getString("key_key", "") ?: ""  // Fetch using the correct key (key_key)
+        val sp = context.getSharedPreferences("custom_prefs", 0)
+        return sp.getString("key_key", "") ?: ""
     }
 
     private fun getBrokerUri(): String {
-        val sp = context?.getSharedPreferences("custom_prefs", 0)
-        return sp?.getString("host_key", "") ?: ""  // Fetch using the correct key (host_key)
+        val sp = context.getSharedPreferences("custom_prefs", 0)
+        return sp.getString("host_key", "") ?: ""
     }
 
-    fun publishMessage(message:String,topic:String){
-        if (mqttClient.isConnected){
-            try{
-                val mqttMessage = MqttMessage()
-                mqttMessage.payload = message.toByteArray()
-                mqttClient.publish(topic,mqttMessage)
-                Log.i("MQTT","publish sent successfully ")
-            }catch (e: Exception){
-                Log.e("MQTT","Exception during publish: ", e)
+    fun publishMessage(message: String, topic: String) {
+        if (mqttClient.isConnected) {
+            try {
+                val mqttMessage = MqttMessage().apply {
+                    payload = message.toByteArray()
+                }
+                mqttClient.publish(topic, mqttMessage)
+                Log.i("MQTT", "Message published successfully")
+            } catch (e: Exception) {
+                Log.e("MQTT", "Exception during publish: ", e)
             }
+        } else {
+            Log.e("MQTT", "Client is not connected")
         }
     }
 
@@ -69,4 +74,14 @@ class MqttHandler(private val context: Context) {
         mqttClient.setCallback(callback)
     }
 
+    companion object {
+        @Volatile
+        private var INSTANCE: MqttHandler? = null
+
+        fun getInstance(context: Context): MqttHandler {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: MqttHandler(context.applicationContext).also { INSTANCE = it }
+            }
+        }
+    }
 }
