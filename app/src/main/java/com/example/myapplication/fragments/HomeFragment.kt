@@ -49,6 +49,13 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupUI(view)
+
+        restoreBlockState()
+
+    }
+
+    private fun setupUI(view: View) {
         switchContainer = view.findViewById(R.id.switchContainer)
         addBlock = view.findViewById(R.id.add_blocks)
         trashBin = view.findViewById(R.id.trashBin)
@@ -56,18 +63,14 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         val toggleEditorModeButton = view.findViewById<ImageButton>(R.id.editDashboard)
 
         addBlock.setOnClickListener {
-            val selectBlockTypeFragment = SelectBlockTypeFragment()
-            selectBlockTypeFragment.setHomeFragment(this)
-            selectBlockTypeFragment.show(parentFragmentManager,"select block type")
+            val selectBlockTypeFragment = SelectBlockTypeFragment().apply {
+                setHomeFragment(this@HomeFragment)
+            }
+            selectBlockTypeFragment.show(parentFragmentManager, "select block type")
         }
 
-        toggleEditorModeButton.setOnClickListener {
-            toggleEditorMode()
-        }
-
-        restoreBlockState()
-
-        trashBin.visibility = if(editorMode) View.VISIBLE else View.GONE
+        toggleEditorModeButton.setOnClickListener { toggleEditorMode() }
+        trashBin.visibility = if (editorMode) View.VISIBLE else View.GONE
     }
 
 
@@ -106,148 +109,111 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
 
 
-        if (blockCount < maxBlocks) {
-            if (blockType == BlockTypes.Switch){
-                addSwitch(topic,0f,0f,true)
-            }else if (blockType == BlockTypes.Button){
-                addButton(topic, 0f, 0f, true)
-            }else if (blockType == BlockTypes.Alarm){
-                addAlarm(topic,0f,0f,true, time)
-            }
+        if (blockCount >= maxBlocks) {
+            Toast.makeText(requireContext(), "Maximum blocks reached", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        }else{
-            val popup = Toast.makeText(requireContext(),"Maximum switches reached",Toast.LENGTH_SHORT)
-            popup.show()
+        when (blockType) {
+            BlockTypes.Switch -> addSwitch(topic, 0f, 0f, true)
+            BlockTypes.Button -> addButton(topic, 0f, 0f, true)
+            BlockTypes.Alarm -> addAlarm(topic, 0f, 0f, true, time)
         }
     }
 
-    private fun addSwitch(topic: String, x: Float, y: Float, new: Boolean){
-        val layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.WRAP_CONTENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
-        )
+    private fun addSwitch(topic: String, x: Float, y: Float, isNew: Boolean) {
+        val newSwitch = Switch(requireContext()).apply {
+            setTrackResource(R.drawable.bg_track)
+            setThumbResource(R.drawable.thumb)
+            this.x = x
+            this.y = y
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+            configureSwitch(this, topic)
+        }
+        addViewToContainer(newSwitch,  isNew)
+        blockMap[newSwitch] = BlockData(topic, x, y )
 
-        val newSwitch = Switch(requireContext())
-        newSwitch.setTrackResource(R.drawable.bg_track)
-        newSwitch.setThumbResource(R.drawable.thumb)
-        newSwitch.x = x
-        newSwitch.y = y
-        newSwitch.layoutParams = layoutParams
-        if (new) blockCount++
+    }
 
-
-        val blockTouchListener = BlockTouchListener(newSwitch, trashBin, switchContainer) { removeBlock(it) }
-
+    private fun configureSwitch(newSwitch: Switch, topic: String) {
         newSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                val mqttHandler = MqttHandler.getInstance(requireContext())
-                mqttHandler.publishMessage("ON",topic)
-            }else{
-                val mqttHandler = MqttHandler.getInstance(requireContext())
-                mqttHandler.publishMessage("OFF",topic)
-            }
+            val mqttHandler = MqttHandler.getInstance(requireContext())
+            mqttHandler.publishMessage(if (isChecked) "ON" else "OFF", topic)
             saveBlockState()
         }
-
-        if (!editorMode && new) toggleEditorMode()
-        blockMap[newSwitch] = BlockData(topic, x, y)
-        if (editorMode) newSwitch.setOnTouchListener(blockTouchListener)
-        switchContainer.addView(newSwitch)
     }
 
-    private fun addButton(topic: String, x: Float, y: Float, new: Boolean){
-        val layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.WRAP_CONTENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
-        )
-
-        val newButton = Button(requireContext())
-        newButton.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.red))
-        newButton.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-        newButton.layoutParams = layoutParams
-        newButton.x = x
-        newButton.y = y
-        if (new) blockCount++
-
-        newButton.setOnClickListener {
-            val mqttHandler = MqttHandler.getInstance(requireContext())
-            mqttHandler.publishMessage("1",topic)
+    private fun addButton(topic: String, x: Float, y: Float, isNew: Boolean) {
+        val newButton = Button(requireContext()).apply {
+            setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.red))
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+            this.x = x
+            this.y = y
+            text = topic.substringAfterLast("/")
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+            setOnClickListener {
+                val mqttHandler = MqttHandler.getInstance(requireContext())
+                mqttHandler.publishMessage("1", topic)
+            }
         }
-
-        if (!editorMode && new) toggleEditorMode()
-
-        val blockTouchListener = BlockTouchListener(newButton, trashBin, switchContainer) { removeBlock(it) }
-
-        blockMap[newButton] = BlockData(topic,x,y)
-        if (editorMode) newButton.setOnTouchListener(blockTouchListener)
-        newButton.text = topic.substringAfterLast("/")
-
-        switchContainer.addView(newButton)
-
-
+        addViewToContainer(newButton, isNew)
+        blockMap[newButton] = BlockData(topic, x, y)
     }
 
-    private fun addAlarm(topic: String,x: Float,y: Float,new: Boolean,time: Long){
-        val layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.WRAP_CONTENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
-        )
-        val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
-        val formattedTime = timeFormat.format(Date(time))
-
-
-
-        val newAlarm = AlarmView(requireContext())
-        newAlarm.text = "Alarm set at $formattedTime"
-        newAlarm.layoutParams = layoutParams
-        newAlarm.x = x
-        newAlarm.y = y
-
-        if (new) blockCount++
-        if (!editorMode && new) toggleEditorMode()
-
-        val blockTouchListener = BlockTouchListener(newAlarm, trashBin, switchContainer) { removeBlock(it) }
-
+    private fun addAlarm(topic: String, x: Float, y: Float, isNew: Boolean, time: Long) {
+        val formattedTime = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(time))
+        val newAlarm = AlarmView(requireContext()).apply {
+            text = "Alarm set at $formattedTime"
+            this.x = x
+            this.y = y
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+        addViewToContainer(newAlarm, isNew)
         blockMap[newAlarm] = BlockData(topic, x, y, time)
+        setAlarm(topic, time)
+    }
 
-
-
-        if (editorMode) newAlarm.setOnTouchListener(blockTouchListener)
-
-        switchContainer.addView(newAlarm)
-
+    private fun setAlarm(topic: String, time: Long) {
         val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(requireContext(), AlarmReceiver::class.java).apply {
             putExtra("topic", topic)
         }
-        val uniqueRequestCode = UUID.randomUUID().hashCode()
         val pendingIntent = PendingIntent.getBroadcast(
             requireContext(),
-            uniqueRequestCode,
+            UUID.randomUUID().hashCode(),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
-        // Set the alarm to trigger at the specified time
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pendingIntent)
     }
 
+    private fun addViewToContainer(view: View, isNew: Boolean) {
+        if (isNew) blockCount++
+        if (!editorMode && isNew) toggleEditorMode()
+
+        view.setOnTouchListener(if (editorMode) createBlockTouchListener(view) else null)
+        switchContainer.addView(view)
+    }
+
+    private fun createBlockTouchListener(view: View): View.OnTouchListener {
+        return BlockTouchListener(view, trashBin, switchContainer) { removeBlock(it) }
+    }
+
+
     private fun removeBlock(block: Any) {
         blockCount--
-
         blockMap.remove(block)
-
-        if (block is View) {
-            switchContainer.removeView(block)
-        }
-
-        if (block is AlarmView) {
-            switchContainer.removeView(block)
-        }
-
+        if (block is View) switchContainer.removeView(block)
         saveBlockState()
-
-
     }
 
     private fun saveBlockState() {
@@ -277,6 +243,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         val sp = context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
         editorMode = false
         blockCount = sp?.getInt("blockCount", 0) ?: 0
+
+        Log.i("Restore Blocks", "restoring blocks with block count of $blockCount")
 
         blockMap.clear()
 

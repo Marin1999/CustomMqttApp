@@ -38,7 +38,6 @@ class AddTopicDialogFragment(selectedBlockType: BlockTypes) : BottomSheetDialogF
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        Log.d("ParentFragment", "Parent fragment: ${parentFragment?.javaClass?.simpleName}")
         if (parentFragment is OnTopicAddedListener) {
             onTopicAddedListener = parentFragment as OnTopicAddedListener
         } else {
@@ -59,44 +58,51 @@ class AddTopicDialogFragment(selectedBlockType: BlockTypes) : BottomSheetDialogF
         } else {
             view = inflater.inflate(R.layout.topic_dialog_default, container, false) // Default layout
         }
-        val editHour = view.findViewById<EditText>(R.id.editHours)
-        val editMinute = view.findViewById<EditText>(R.id.editMinutes)
 
-
-
-        val confirmButton = view.findViewById<AppCompatButton>(R.id.createButton)
-        confirmButton.setOnClickListener {
-            val topic = view.findViewById<EditText>(R.id.editTopic).text.toString()
-
-
-
-
-            if (selectedBlockType == BlockTypes.Alarm) {
-                val hour = editHour.text.toString()
-                val minute = editMinute.text.toString()
-
-                if (hour.isNotEmpty() && minute.isNotEmpty()) {
-                    val calendar = Calendar.getInstance()
-
-                    calendar.set(Calendar.HOUR_OF_DAY, hour.toInt())
-                    calendar.set(Calendar.MINUTE, minute.toInt())
-                    calendar.set(Calendar.SECOND, 0)
-                    calendar.set(Calendar.MILLISECOND, 0)
-
-                    val selectedTimeInMillis = calendar.timeInMillis
-
-                    homeFragment.onTopicAdded(topic, selectedBlockType, selectedTimeInMillis)
-                    dismiss()
-                } else {
-                    Toast.makeText(requireContext(), "Please enter valid hour and minute", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                homeFragment.onTopicAdded(topic, selectedBlockType, 0L)
-                dismiss()
-            }
-
-
-        }
+        setupConfirmButton(view)
         return view
     }
+    private fun setupConfirmButton(view: View) {
+        val topicInput = view.findViewById<EditText>(R.id.editTopic)
+        val confirmButton = view.findViewById<AppCompatButton>(R.id.createButton)
+
+        confirmButton.setOnClickListener {
+            val topic = topicInput.text.toString()
+            if (topic.isBlank()) {
+                Toast.makeText(requireContext(), "Topic cannot be empty", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (selectedBlockType == BlockTypes.Alarm) {
+                handleAlarmTopic(view, topic)
+            } else {
+                homeFragment?.onTopicAdded(topic, selectedBlockType, 0L)
+                dismiss()
+            }
+        }
+    }
+
+    private fun handleAlarmTopic(view: View, topic: String) {
+        val hourInput = view.findViewById<EditText>(R.id.editHours)
+        val minuteInput = view.findViewById<EditText>(R.id.editMinutes)
+
+        val hour = hourInput.text.toString().toIntOrNull()
+        val minute = minuteInput.text.toString().toIntOrNull()
+
+        if (hour != null && minute != null && hour in 0..23 && minute in 0..59) {
+            val calendar = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val selectedTimeInMillis = calendar.timeInMillis
+
+            homeFragment?.onTopicAdded(topic, BlockTypes.Alarm, selectedTimeInMillis)
+            dismiss()
+        } else {
+            Toast.makeText(requireContext(), "Please enter a valid hour (0-23) and minute (0-59)", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 }
