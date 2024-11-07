@@ -8,6 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import androidx.fragment.app.Fragment
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import androidx.security.crypto.MasterKeys
 import com.example.myapplication.R
 
 class CustomPreferenceFragment : Fragment() {
@@ -22,7 +25,18 @@ class CustomPreferenceFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val rootView = inflater.inflate(R.layout.custom_preference_screen, container, false)
-        sharedPreferences = requireContext().getSharedPreferences("custom_prefs", Context.MODE_PRIVATE)
+
+        val masterKey = MasterKey.Builder(requireContext())
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        sharedPreferences = EncryptedSharedPreferences.create(
+            requireContext(),
+            "secure_prefs",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
 
         editHost = rootView.findViewById(R.id.editHost)
         editUsername = rootView.findViewById(R.id.editUsername)

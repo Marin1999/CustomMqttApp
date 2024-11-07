@@ -3,6 +3,8 @@ package com.example.myapplication.mqtt
 import android.content.Context
 import android.util.Log
 import androidx.preference.PreferenceManager
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import info.mqtt.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttToken
@@ -11,11 +13,26 @@ import org.eclipse.paho.client.mqttv3.MqttClient
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import java.lang.Exception
+import javax.net.ssl.SSLSocketFactory
 
 class MqttHandler private constructor(private val context: Context) {
 
     private val mqttClient: MqttAndroidClient by lazy {
         MqttAndroidClient(context, getBrokerUri(), MqttClient.generateClientId())
+    }
+
+    private val sharedPreferences by lazy {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        EncryptedSharedPreferences.create(
+            context,
+            "secure_prefs",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
     }
 
     init {
@@ -26,6 +43,8 @@ class MqttHandler private constructor(private val context: Context) {
         val options = MqttConnectOptions().apply {
             userName = getUsername()
             password = getKey().toCharArray()
+            isAutomaticReconnect = true
+            socketFactory = SSLSocketFactory.getDefault()
         }
 
         mqttClient.connect(options, null, object : IMqttActionListener {
@@ -40,18 +59,15 @@ class MqttHandler private constructor(private val context: Context) {
     }
 
     private fun getUsername(): String {
-        val sp = context.getSharedPreferences("custom_prefs", 0)
-        return sp.getString("username_key", "") ?: ""
+        return sharedPreferences.getString("username_key", "") ?: ""
     }
 
     private fun getKey(): String {
-        val sp = context.getSharedPreferences("custom_prefs", 0)
-        return sp.getString("key_key", "") ?: ""
+        return sharedPreferences.getString("key_key", "") ?: ""
     }
 
     private fun getBrokerUri(): String {
-        val sp = context.getSharedPreferences("custom_prefs", 0)
-        return sp.getString("host_key", "") ?: ""
+        return sharedPreferences.getString("host_key", "") ?: ""
     }
 
     fun publishMessage(message: String, topic: String) {
