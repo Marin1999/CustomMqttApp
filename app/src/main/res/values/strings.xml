@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">My MQTT Dashboard</string>
     <!-- Preference Titles -->
     <string name="MQTT_header">MQTT Broker</string>
     <string name="sync_header">Sync</string>
