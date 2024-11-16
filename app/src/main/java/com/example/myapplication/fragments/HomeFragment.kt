@@ -115,13 +115,13 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         }
 
         when (blockType) {
-            BlockTypes.Switch -> addSwitch(topic, 0f, 0f, true)
+            BlockTypes.Switch -> addSwitch(topic, 0f, 0f, false, true)
             BlockTypes.Button -> addButton(topic, 0f, 0f, true)
             BlockTypes.Alarm -> addAlarm(topic, 0f, 0f, true, time)
         }
     }
 
-    private fun addSwitch(topic: String, x: Float, y: Float, isNew: Boolean) {
+    private fun addSwitch(topic: String, x: Float, y: Float, isChecked:Boolean, isNew: Boolean) {
         val newSwitch = Switch(requireContext()).apply {
             setTrackResource(R.drawable.bg_track)
             setThumbResource(R.drawable.thumb)
@@ -131,19 +131,20 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT
             )
-            configureSwitch(this, topic)
+            configureSwitch(this, topic, isChecked)
         }
         addViewToContainer(newSwitch,  isNew)
         blockMap[newSwitch] = BlockData(topic, x, y )
 
     }
 
-    private fun configureSwitch(newSwitch: Switch, topic: String) {
+    private fun configureSwitch(newSwitch: Switch, topic: String, isChecked: Boolean) {
         newSwitch.setOnCheckedChangeListener { _, isChecked ->
             val mqttHandler = MqttHandler.getInstance(requireContext())
             mqttHandler.publishMessage(if (isChecked) "ON" else "OFF", topic)
             saveBlockState()
         }
+        newSwitch.isChecked = isChecked
     }
 
     private fun addButton(topic: String, x: Float, y: Float, isNew: Boolean) {
@@ -255,7 +256,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             val y = sp?.getFloat("block_$index-y", 0f) ?: 0f
 
             if (type == "switch"){
-                addSwitch(topic,x,y,false)
+                val checked = sp?.getBoolean("block_$index-checked", false) ?: false
+                addSwitch(topic,x,y,checked, false)
             }else if (type == "button"){
                 addButton(topic,x,y, false)
             }else if (type == "alarm"){
