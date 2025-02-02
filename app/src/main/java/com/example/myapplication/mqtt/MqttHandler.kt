@@ -2,7 +2,6 @@ package com.example.myapplication.mqtt
 
 import android.content.Context
 import android.util.Log
-import androidx.preference.PreferenceManager
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import info.mqtt.android.service.MqttAndroidClient
@@ -41,10 +40,13 @@ class MqttHandler private constructor(private val context: Context) {
 
     private fun connect() {
         val options = MqttConnectOptions().apply {
-            userName = getUsername()
-            password = getKey().toCharArray()
             isAutomaticReconnect = true
             socketFactory = SSLSocketFactory.getDefault()
+        }
+        val useAuthentication = sharedPreferences.getString("checkbox_key", "false")?.toBoolean()?: false
+        if(useAuthentication){
+            options.userName = getUsername()
+            options.password = getKey().toCharArray()
         }
 
         mqttClient.connect(options, null, object : IMqttActionListener {

@@ -1,20 +1,29 @@
-<!-- res/drawable/rounded_edittext_background.xml -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Background color of the EditText -->
-    <solid android:color="#FFFFFF" /> <!-- Change color as needed -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Disabled state -->
+    <item android:state_enabled="false">
+        <shape>
+            <solid android:color="#E0E0E0" /> <!-- Light grey background for disabled -->
+            <corners android:radius="12dp" />
+            <stroke
+                android:width="2dp"
+                android:color="#A0A0A0" />
 
-    <!-- Rounded corners -->
-    <corners android:radius="12dp" /> <!-- Adjust the radius as needed -->
+            <padding
+                android:left="20dp"
+                android:right="20dp"
+                android:top="10dp"
+                android:bottom="10dp" /><!-- Grey border for disabled -->
+        </shape>
+    </item>
 
-    <!-- Optional: Border around the EditText -->
-    <stroke
-        android:width="2dp"
-        android:color="#000000" /> <!-- Change border color if needed -->
-
-    <!-- Optional: Padding inside the EditText -->
-    <padding
-        android:left="20dp"
-        android:right="20dp"
-        android:top="10dp"
-        android:bottom="10dp" />
-</shape>
+    <!-- Enabled state -->
+    <item>
+        <shape>
+            <solid android:color="#FFFFFF" /> <!-- White background for enabled -->
+            <corners android:radius="12dp" />
+            <stroke
+                android:width="2dp"
+                android:color="#000000" /> <!-- Black border for enabled -->
+        </shape>
+    </item>
+</selector>
