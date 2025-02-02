@@ -1,16 +1,15 @@
 package com.example.myapplication.fragments
 
-import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import androidx.security.crypto.MasterKeys
 import com.example.myapplication.R
 
 class CustomPreferenceFragment : Fragment() {
@@ -19,6 +18,7 @@ class CustomPreferenceFragment : Fragment() {
     private lateinit var editHost: EditText
     private lateinit var editUsername: EditText
     private lateinit var editKey: EditText
+    private lateinit var checkBox: CheckBox
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,8 +41,14 @@ class CustomPreferenceFragment : Fragment() {
         editHost = rootView.findViewById(R.id.editHost)
         editUsername = rootView.findViewById(R.id.editUsername)
         editKey = rootView.findViewById(R.id.editKey)
+        checkBox = rootView.findViewById(R.id.checkBoxAuthentication)
 
         loadPreferences()
+
+        checkBox.setOnCheckedChangeListener { _, isChecked ->
+            toggleFields(isChecked)
+            savePreference("checkbox_key", isChecked.toString())
+        }
 
         setupPreferenceSaveListener(editHost, "host_key")
         setupPreferenceSaveListener(editUsername, "username_key")
@@ -55,6 +61,9 @@ class CustomPreferenceFragment : Fragment() {
         editHost.setText(sharedPreferences.getString("host_key", ""))
         editUsername.setText(sharedPreferences.getString("username_key", ""))
         editKey.setText(sharedPreferences.getString("key_key", ""))
+        val isCheckboxChecked = sharedPreferences.getString("checkbox_key", "false")?.toBoolean() ?: false
+        checkBox.isChecked = isCheckboxChecked
+        toggleFields(isCheckboxChecked)
     }
 
     private fun setupPreferenceSaveListener(editText: EditText, key: String) {
@@ -63,6 +72,10 @@ class CustomPreferenceFragment : Fragment() {
                 savePreference(key, editText.text.toString())
             }
         }
+    }
+    private fun toggleFields(enable: Boolean) {
+        editUsername.isEnabled = enable
+        editKey.isEnabled = enable
     }
 
     private fun savePreference(key: String, value: String) {
