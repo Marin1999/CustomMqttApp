@@ -1,4 +1,4 @@
-package com.example.myapplication.fragments
+package com.example.myapplication.ui.fragments
 
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -61,7 +61,8 @@ class CustomPreferenceFragment : Fragment() {
         editHost.setText(sharedPreferences.getString("host_key", ""))
         editUsername.setText(sharedPreferences.getString("username_key", ""))
         editKey.setText(sharedPreferences.getString("key_key", ""))
-        val isCheckboxChecked = sharedPreferences.getString("checkbox_key", "false")?.toBoolean() ?: false
+        val isCheckboxChecked =
+            sharedPreferences.getString("checkbox_key", "false")?.toBoolean() ?: false
         checkBox.isChecked = isCheckboxChecked
         toggleFields(isCheckboxChecked)
     }
@@ -73,6 +74,7 @@ class CustomPreferenceFragment : Fragment() {
             }
         }
     }
+
     private fun toggleFields(enable: Boolean) {
         editUsername.isEnabled = enable
         editKey.isEnabled = enable

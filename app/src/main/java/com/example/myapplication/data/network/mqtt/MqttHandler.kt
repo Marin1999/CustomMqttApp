@@ -1,4 +1,4 @@
-package com.example.myapplication.mqtt
+package com.example.myapplication.data.network.mqtt
 
 import android.content.Context
 import android.util.Log
@@ -11,7 +11,6 @@ import org.eclipse.paho.client.mqttv3.MqttCallback
 import org.eclipse.paho.client.mqttv3.MqttClient
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttMessage
-import java.lang.Exception
 import javax.net.ssl.SSLSocketFactory
 
 class MqttHandler private constructor(private val context: Context) {
@@ -43,8 +42,9 @@ class MqttHandler private constructor(private val context: Context) {
             isAutomaticReconnect = true
             socketFactory = SSLSocketFactory.getDefault()
         }
-        val useAuthentication = sharedPreferences.getString("checkbox_key", "false")?.toBoolean()?: false
-        if(useAuthentication){
+        val useAuthentication =
+            sharedPreferences.getString("checkbox_key", "false")?.toBoolean() ?: false
+        if (useAuthentication) {
             options.userName = getUsername()
             options.password = getKey().toCharArray()
         }

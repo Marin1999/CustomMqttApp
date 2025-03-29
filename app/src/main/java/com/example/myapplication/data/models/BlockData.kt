@@ -1,4 +1,4 @@
-package com.example.myapplication.models
+package com.example.myapplication.data.models
 
 data class BlockData(
     val topic: String,

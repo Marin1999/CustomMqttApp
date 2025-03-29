@@ -3,10 +3,8 @@ package com.example.myapplication
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
-import com.example.myapplication.fragments.HomeFragmentDirections
-import com.example.myapplication.fragments.OnTopicAddedListener
-import com.example.myapplication.models.BlockTypes
+import com.example.myapplication.data.models.BlockTypes
+import com.example.myapplication.ui.fragments.OnTopicAddedListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity(), OnTopicAddedListener {
@@ -16,12 +14,13 @@ class MainActivity : AppCompatActivity(), OnTopicAddedListener {
 
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
         bottomNavigation.setOnItemSelectedListener { menuItem ->
-            when(menuItem.itemId){
-                R.id.navigation_settings->{
+            when (menuItem.itemId) {
+                R.id.navigation_settings -> {
                     findNavController(R.id.nav_host_fragment).navigate(R.id.action_home_Fragment_to_customPreferenceFragment)
                     true
                 }
-                R.id.navigation_home->{
+
+                R.id.navigation_home -> {
                     findNavController(R.id.nav_host_fragment).navigate(R.id.action_customPreferenceFragment_to_home_Fragment)
                     true
                 }
