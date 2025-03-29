@@ -1,4 +1,4 @@
-package com.example.myapplication.touch
+package com.example.myapplication.ui.interactions
 
 import android.graphics.Rect
 import android.view.MotionEvent
@@ -59,9 +59,9 @@ class BlockTouchListener(
             MotionEvent.ACTION_UP -> {
                 // If the touch duration is short, it's considered a tap (toggle the switch)
                 if (System.currentTimeMillis() - touchDownTime <= longPressDuration) {
-                    if (block is Switch){
+                    if (block is Switch) {
                         block.isChecked = !block.isChecked
-                    }else if (block is Button){
+                    } else if (block is Button) {
 
                     }
                 }

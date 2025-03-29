@@ -1,6 +1,5 @@
-package com.example.myapplication.fragments
+package com.example.myapplication.ui.fragments
 
-import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -19,20 +18,18 @@ import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.example.myapplication.R
-import com.example.myapplication.models.BlockTypes
-import com.example.myapplication.models.BlockData
-import com.example.myapplication.mqtt.MqttHandler
+import com.example.myapplication.data.models.BlockData
+import com.example.myapplication.data.models.BlockTypes
+import com.example.myapplication.data.network.mqtt.MqttHandler
 import com.example.myapplication.receivers.AlarmReceiver
-import com.example.myapplication.touch.BlockTouchListener
-import com.example.myapplication.views.AlarmView
+import com.example.myapplication.ui.interactions.BlockTouchListener
+import com.example.myapplication.ui.views.AlarmView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.forEachIndexed
-import kotlin.collections.mutableMapOf
 import kotlin.collections.set
 
 class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
@@ -52,7 +49,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         setupUI(view)
 
         restoreBlockState()
-
     }
 
     private fun setupUI(view: View) {
@@ -95,9 +91,9 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                 }
             }
         }
-        if (editorMode){
+        if (editorMode) {
             trashBin.visibility = View.VISIBLE
-        }else{
+        } else {
             trashBin.visibility = View.GONE
             saveBlockState()
         }
@@ -106,8 +102,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
     private fun addBlock(topic: String, blockType: BlockTypes, time: Long) {
         Log.i("Blocktype", blockType.toString())
-
-
 
         if (blockCount >= maxBlocks) {
             Toast.makeText(requireContext(), "Maximum blocks reached", Toast.LENGTH_SHORT).show()
@@ -121,7 +115,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         }
     }
 
-    private fun addSwitch(topic: String, x: Float, y: Float, isChecked:Boolean, isNew: Boolean) {
+    private fun addSwitch(topic: String, x: Float, y: Float, isChecked: Boolean, isNew: Boolean) {
         val newSwitch = Switch(requireContext()).apply {
             setTrackResource(R.drawable.bg_track)
             setThumbResource(R.drawable.thumb)
@@ -133,8 +127,8 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             )
             configureSwitch(this, topic, isChecked)
         }
-        addViewToContainer(newSwitch,  isNew)
-        blockMap[newSwitch] = BlockData(topic, x, y )
+        addViewToContainer(newSwitch, isNew)
+        blockMap[newSwitch] = BlockData(topic, x, y)
 
     }
 
@@ -223,13 +217,13 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         editor?.putInt("blockCount", blockCount)
 
         blockMap.entries.forEachIndexed { index, (any, blockData) ->
-            if (any is Switch){
-                editor?.putString("block_$index-type","switch")
+            if (any is Switch) {
+                editor?.putString("block_$index-type", "switch")
                 editor?.putBoolean("block_$index-checked", any.isChecked)
-            }else if(any is Button){
-                editor?.putString("block_$index-type","button")
-            }else if(any is AlarmView){
-                editor?.putString("block_$index-type","alarm")
+            } else if (any is Button) {
+                editor?.putString("block_$index-type", "button")
+            } else if (any is AlarmView) {
+                editor?.putString("block_$index-type", "alarm")
                 blockData.time?.let { editor?.putLong("block_$index-time", it) }
             }
             editor?.putString("block_$index-topic", blockData.topic)
@@ -250,27 +244,27 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
         blockMap.clear()
 
         for (index in 0 until blockCount) {
-            val type = sp?.getString("block_$index-type","")?:""
+            val type = sp?.getString("block_$index-type", "") ?: ""
             val topic = sp?.getString("block_$index-topic", "") ?: ""
             val x = sp?.getFloat("block_$index-x", 0f) ?: 0f
             val y = sp?.getFloat("block_$index-y", 0f) ?: 0f
 
-            if (type == "switch"){
+            if (type == "switch") {
                 val checked = sp?.getBoolean("block_$index-checked", false) ?: false
-                addSwitch(topic,x,y,checked, false)
-            }else if (type == "button"){
-                addButton(topic,x,y, false)
-            }else if (type == "alarm"){
+                addSwitch(topic, x, y, checked, false)
+            } else if (type == "button") {
+                addButton(topic, x, y, false)
+            } else if (type == "alarm") {
                 val time = sp?.getLong("block_$index-time", 0) ?: 0
-                addAlarm(topic,x,y,false, time)
+                addAlarm(topic, x, y, false, time)
             }
         }
 
     }
 
 
-    override fun onTopicAdded(topic: String, blockType: BlockTypes, time:Long) {
-        addBlock(topic,  blockType, time)
+    override fun onTopicAdded(topic: String, blockType: BlockTypes, time: Long) {
+        addBlock(topic, blockType, time)
     }
 
 }

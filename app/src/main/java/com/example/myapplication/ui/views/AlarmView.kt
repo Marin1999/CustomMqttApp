@@ -1,14 +1,12 @@
-package com.example.myapplication.views
+package com.example.myapplication.ui.views
 
 import android.content.Context
-import android.graphics.Bitmap.CompressFormat
-import android.graphics.Color
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import com.example.myapplication.R
 
-class AlarmView(context: Context) : AppCompatTextView(context){
+class AlarmView(context: Context) : AppCompatTextView(context) {
     init {
         setBackgroundColor(ContextCompat.getColor(context, R.color.softPink))
         setTextColor(ContextCompat.getColor(context, R.color.white))

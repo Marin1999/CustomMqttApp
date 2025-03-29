@@ -1,23 +1,21 @@
-package com.example.myapplication.fragments
+package com.example.myapplication.ui.fragments
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import androidx.fragment.app.Fragment
 import com.example.myapplication.R
-import com.example.myapplication.models.BlockTypes
+import com.example.myapplication.data.models.BlockTypes
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import java.util.Calendar
 
 interface OnTopicAddedListener {
-    fun onTopicAdded(topic: String,  blockType: BlockTypes, time: Long)
+    fun onTopicAdded(topic: String, blockType: BlockTypes, time: Long)
 }
 
 class AddTopicDialogFragment(selectedBlockType: BlockTypes) : BottomSheetDialogFragment() {
@@ -54,14 +52,20 @@ class AddTopicDialogFragment(selectedBlockType: BlockTypes) : BottomSheetDialogF
 
 
         if (selectedBlockType == BlockTypes.Alarm) {
-            view = inflater.inflate(R.layout.topic_dialog_alarm, container, false) // Different layout for Alarm
+            view = inflater.inflate(
+                R.layout.topic_dialog_alarm,
+                container,
+                false
+            ) // Different layout for Alarm
         } else {
-            view = inflater.inflate(R.layout.topic_dialog_default, container, false) // Default layout
+            view =
+                inflater.inflate(R.layout.topic_dialog_default, container, false) // Default layout
         }
 
         setupConfirmButton(view)
         return view
     }
+
     private fun setupConfirmButton(view: View) {
         val topicInput = view.findViewById<EditText>(R.id.editTopic)
         val confirmButton = view.findViewById<AppCompatButton>(R.id.createButton)
@@ -76,7 +80,7 @@ class AddTopicDialogFragment(selectedBlockType: BlockTypes) : BottomSheetDialogF
             if (selectedBlockType == BlockTypes.Alarm) {
                 handleAlarmTopic(view, topic)
             } else {
-                homeFragment?.onTopicAdded(topic, selectedBlockType, 0L)
+                homeFragment.onTopicAdded(topic, selectedBlockType, 0L)
                 dismiss()
             }
         }
@@ -89,7 +93,7 @@ class AddTopicDialogFragment(selectedBlockType: BlockTypes) : BottomSheetDialogF
         val hour = hourInput.text.toString().toIntOrNull()
         val minute = minuteInput.text.toString().toIntOrNull()
 
-        if (hour != null && minute != null && hour in 0..23 && minute in 0..59) {
+        if ((hour != null) && (minute != null) && (hour in (0..23)) && (minute in (0..59))) {
             val calendar = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, hour)
                 set(Calendar.MINUTE, minute)
@@ -98,10 +102,14 @@ class AddTopicDialogFragment(selectedBlockType: BlockTypes) : BottomSheetDialogF
             }
             val selectedTimeInMillis = calendar.timeInMillis
 
-            homeFragment?.onTopicAdded(topic, BlockTypes.Alarm, selectedTimeInMillis)
+            homeFragment.onTopicAdded(topic, BlockTypes.Alarm, selectedTimeInMillis)
             dismiss()
         } else {
-            Toast.makeText(requireContext(), "Please enter a valid hour (0-23) and minute (0-59)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                "Please enter a valid hour (0-23) and minute (0-59)",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
