@@ -28,11 +28,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import javax.inject.Inject
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
 
 class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
+
+    @Inject
+    lateinit var mqttHandler: MqttHandler
 
     private lateinit var switchContainer: FrameLayout
     private lateinit var addBlock: ImageButton
@@ -134,7 +138,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
     private fun configureSwitch(newSwitch: Switch, topic: String, isChecked: Boolean) {
         newSwitch.setOnCheckedChangeListener { _, isChecked ->
-            val mqttHandler = MqttHandler.getInstance(requireContext())
             mqttHandler.publishMessage(if (isChecked) "ON" else "OFF", topic)
             saveBlockState()
         }
@@ -153,7 +156,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                 FrameLayout.LayoutParams.WRAP_CONTENT
             )
             setOnClickListener {
-                val mqttHandler = MqttHandler.getInstance(requireContext())
                 mqttHandler.publishMessage("1", topic)
             }
         }
