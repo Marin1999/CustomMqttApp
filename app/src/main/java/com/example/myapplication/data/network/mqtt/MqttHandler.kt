@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import dagger.hilt.android.qualifiers.ApplicationContext
 import info.mqtt.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttToken
@@ -11,9 +12,12 @@ import org.eclipse.paho.client.mqttv3.MqttCallback
 import org.eclipse.paho.client.mqttv3.MqttClient
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttMessage
+import javax.inject.Inject
 import javax.net.ssl.SSLSocketFactory
 
-class MqttHandler private constructor(private val context: Context) {
+class MqttHandler @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     private val mqttClient: MqttAndroidClient by lazy {
         MqttAndroidClient(context, getBrokerUri(), MqttClient.generateClientId())
@@ -90,16 +94,5 @@ class MqttHandler private constructor(private val context: Context) {
 
     fun setCallback(callback: MqttCallback) {
         mqttClient.setCallback(callback)
-    }
-
-    companion object {
-        @Volatile
-        private var INSTANCE: MqttHandler? = null
-
-        fun getInstance(context: Context): MqttHandler {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: MqttHandler(context.applicationContext).also { INSTANCE = it }
-            }
-        }
     }
 }
