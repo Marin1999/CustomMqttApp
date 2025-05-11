@@ -1,4 +1,4 @@
-# SmartSwitch MQTT App
+# Custom MQTT App
 
 An Android app that allows users to dynamically add switches, buttons, and alarms to a customizable screen — all connected to a personal MQTT server.
 
