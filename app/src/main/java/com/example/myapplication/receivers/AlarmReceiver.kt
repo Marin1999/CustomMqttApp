@@ -17,5 +17,4 @@ class AlarmReceiver : BroadcastReceiver() {
         val topic = intent.getStringExtra("topic") ?: return
         mqttHandler.publishMessage("1", topic)
     }
-
 }

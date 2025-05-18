@@ -91,8 +91,4 @@ class MqttHandler @Inject constructor(
             Log.e("MQTT", "Client is not connected")
         }
     }
-
-    fun setCallback(callback: MqttCallback) {
-        mqttClient.setCallback(callback)
-    }
 }
