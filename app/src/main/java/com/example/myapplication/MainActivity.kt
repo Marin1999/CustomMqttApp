@@ -6,7 +6,9 @@ import androidx.navigation.findNavController
 import com.example.myapplication.data.models.BlockTypes
 import com.example.myapplication.ui.fragments.OnTopicAddedListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), OnTopicAddedListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

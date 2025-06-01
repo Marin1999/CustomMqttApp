@@ -1,6 +1,7 @@
 package com.example.myapplication.di
 
 import android.content.Context
+import com.example.myapplication.data.managers.BlockManager
 import com.example.myapplication.data.network.mqtt.MqttHandler
 import dagger.Module
 import dagger.Provides
@@ -11,7 +12,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class MqttModule {
+class Module {
 
     @Provides
     @Singleton
@@ -19,5 +20,12 @@ class MqttModule {
         @ApplicationContext context: Context
     ): MqttHandler {
         return MqttHandler(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBlockManager(
+    ): BlockManager {
+        return BlockManager()
     }
 }

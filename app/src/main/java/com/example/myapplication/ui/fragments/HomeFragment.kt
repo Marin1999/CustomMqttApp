@@ -18,34 +18,34 @@ import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.example.myapplication.R
+import com.example.myapplication.data.managers.BlockManager
 import com.example.myapplication.data.models.BlockData
 import com.example.myapplication.data.models.BlockTypes
 import com.example.myapplication.data.network.mqtt.MqttHandler
 import com.example.myapplication.receivers.AlarmReceiver
 import com.example.myapplication.ui.interactions.BlockTouchListener
 import com.example.myapplication.ui.views.AlarmView
+import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.set
 
+@AndroidEntryPoint
 class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
     @Inject
     lateinit var mqttHandler: MqttHandler
 
+    @Inject
+    lateinit var blockManager: BlockManager
+
     private lateinit var switchContainer: FrameLayout
     private lateinit var addBlock: ImageButton
     private lateinit var trashBin: ImageView
     private var editorMode = false
-    private val blockMap = mutableMapOf<Any, BlockData>()
 
-    private val maxBlocks = 8
-    private var blockCount = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -86,12 +86,13 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
                 } else {
                     child.setOnTouchListener(null)
 
-                    val topic = blockMap[child]?.topic ?: ""
-                    val x = child.x
-                    val y = child.y
-                    val time = blockMap[child]?.time
 
-                    blockMap[child] = BlockData(topic, x, y, time)
+
+                    val oldData = blockManager.getBlockData(child)
+                    if (oldData != null) {
+                        val updatedBlock = oldData.copy(x = child.x, y = child.y)
+                        blockManager.updateBlock(child, updatedBlock)
+                    }
                 }
             }
         }
@@ -107,7 +108,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
     private fun addBlock(topic: String, blockType: BlockTypes, time: Long) {
         Log.i("Blocktype", blockType.toString())
 
-        if (blockCount >= maxBlocks) {
+        if (blockManager.blockLimitReached()) {
             Toast.makeText(requireContext(), "Maximum blocks reached", Toast.LENGTH_SHORT).show()
             return
         }
@@ -132,7 +133,9 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             configureSwitch(this, topic, isChecked)
         }
         addViewToContainer(newSwitch, isNew)
-        blockMap[newSwitch] = BlockData(topic, x, y)
+        if (isNew){
+            blockManager.addBlock(newSwitch, BlockData(BlockTypes.Switch, topic, x, y))
+        }
 
     }
 
@@ -160,7 +163,9 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             }
         }
         addViewToContainer(newButton, isNew)
-        blockMap[newButton] = BlockData(topic, x, y)
+        if (isNew){
+            blockManager.addBlock(newButton, BlockData(BlockTypes.Button, topic, x, y))
+        }
     }
 
     private fun addAlarm(topic: String, x: Float, y: Float, isNew: Boolean, time: Long) {
@@ -175,7 +180,9 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
             )
         }
         addViewToContainer(newAlarm, isNew)
-        blockMap[newAlarm] = BlockData(topic, x, y, time)
+        if (isNew) {
+            blockManager.addBlock(newAlarm, BlockData(BlockTypes.Alarm, topic, x, y, time = time))
+        }
         setAlarm(topic, time)
     }
 
@@ -194,7 +201,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
     }
 
     private fun addViewToContainer(view: View, isNew: Boolean) {
-        if (isNew) blockCount++
         if (!editorMode && isNew) toggleEditorMode()
 
         view.setOnTouchListener(if (editorMode) createBlockTouchListener(view) else null)
@@ -207,58 +213,33 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnTopicAddedListener {
 
 
     private fun removeBlock(block: Any) {
-        blockCount--
-        blockMap.remove(block)
+        blockManager.removeBlock(block)
         if (block is View) switchContainer.removeView(block)
         saveBlockState()
     }
 
     private fun saveBlockState() {
-        val sp = context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
-        val editor = sp?.edit()
-        editor?.putInt("blockCount", blockCount)
-
-        blockMap.entries.forEachIndexed { index, (any, blockData) ->
-            if (any is Switch) {
-                editor?.putString("block_$index-type", "switch")
-                editor?.putBoolean("block_$index-checked", any.isChecked)
-            } else if (any is Button) {
-                editor?.putString("block_$index-type", "button")
-            } else if (any is AlarmView) {
-                editor?.putString("block_$index-type", "alarm")
-                blockData.time?.let { editor?.putLong("block_$index-time", it) }
-            }
-            editor?.putString("block_$index-topic", blockData.topic)
-            editor?.putFloat("block_$index-x", blockData.x)
-            editor?.putFloat("block_$index-y", blockData.y)
+        val prefs = context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
+        if (prefs != null) {
+            blockManager.saveState(prefs)
         }
-
-        editor?.apply()
     }
 
     private fun restoreBlockState() {
-        val sp = context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
+        val prefs = context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
         editorMode = false
-        blockCount = sp?.getInt("blockCount", 0) ?: 0
+        for (block in prefs?.let { blockManager.restoreState(it) }!!) {
+            when (block.type) {
+                BlockTypes.Switch -> addSwitch(
+                    block.topic,
+                    block.x,
+                    block.y,
+                    block.isChecked == true,
+                    false
+                )
 
-        Log.i("Restore Blocks", "restoring blocks with block count of $blockCount")
-
-        blockMap.clear()
-
-        for (index in 0 until blockCount) {
-            val type = sp?.getString("block_$index-type", "") ?: ""
-            val topic = sp?.getString("block_$index-topic", "") ?: ""
-            val x = sp?.getFloat("block_$index-x", 0f) ?: 0f
-            val y = sp?.getFloat("block_$index-y", 0f) ?: 0f
-
-            if (type == "switch") {
-                val checked = sp?.getBoolean("block_$index-checked", false) ?: false
-                addSwitch(topic, x, y, checked, false)
-            } else if (type == "button") {
-                addButton(topic, x, y, false)
-            } else if (type == "alarm") {
-                val time = sp?.getLong("block_$index-time", 0) ?: 0
-                addAlarm(topic, x, y, false, time)
+                BlockTypes.Button -> addButton(block.topic, block.x, block.y, false)
+                BlockTypes.Alarm -> addAlarm(block.topic, block.x, block.y, false, block.time ?: 0L)
             }
         }
 
